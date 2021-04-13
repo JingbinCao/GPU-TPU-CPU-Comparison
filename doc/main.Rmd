@@ -1,0 +1,99 @@
+---
+title: "Research for Different Runtime"
+author: "Group"
+date: "4/11/2021"
+output: pdf_document
+---
+# Load Required Packages
+
+```{r load libraries, warning=FALSE, message=FALSE, include=FALSE}
+packages.used=as.list(
+  c(
+  "tidyverse",
+  "haven",
+  "devtools",
+  "RColorBrewer",
+  "data.table",
+  "ggplot2",
+  "DT",
+  "glmnet",
+  "viridis",
+  "pryr",
+  "readr")
+)
+check.pkg = function(x){
+  if(!require(x, character.only=T)) install.packages(x, 
+                                                     character.only=T,
+                                                     dependence=T)
+}
+lapply(packages.used, check.pkg)
+library(tidyverse)
+library(haven)
+library(devtools)
+library(RColorBrewer)
+library(DT)
+library(ggplot2)
+library(glmnet)
+library(viridis)
+library(pryr)
+library(readr)
+```
+
+# Exp Data Analysis
+
+## Load Data
+```{r}
+df <- read.csv("../data/runtime.csv")
+df$Runtime <- as.numeric(df$Runtime)
+df$Runtime <- log(df$Runtime)
+interaction.plot(df$MatrixSize, df$MatrixOperation, df$Runtime)
+
+```
+
+## Basic Graphs
+```{r}
+# Runtime Mean
+jpeg(filename="../figs/runtime_mean.jpeg", width = 500, height = 300,quality = 10000)
+df %>% group_by(Processor) %>% summarize(runtime_mean = mean(Runtime)) %>%
+  ggplot(aes(x=Processor,y=runtime_mean))+
+  geom_point(aes(x=Processor,y=runtime_mean))+
+  geom_line(aes(x=Processor,y=runtime_mean))+
+  scale_color_viridis(discrete=TRUE)+
+  labs(title='Run Time Mean of Different Processors',
+       x='',
+       y='Run Time (in seconds)') +
+  theme_minimal()+
+  theme(axis.line = element_line(),
+        panel.grid.major = element_blank(),
+        panel.grid.minor = element_blank(),
+        panel.border = element_blank(),
+        panel.background = element_blank())+
+  geom_text(aes(label=as.character(runtime_mean)))
+while (!is.null(dev.list()))  dev.off()
+knitr::include_graphics("../figs/runtime_mean.jpeg")
+
+# Runtime Mean
+jpeg(filename="../figs/runtime_mean.jpeg", width = 500, height = 300,quality = 10000)
+df %>% group_by(Processor) %>% summarize(runtime_mean = mean(Runtime)) %>%
+  #ggplot(aes(x=Processor,y=runtime_mean))+
+  geom_point(aes(x=Processor,y=runtime_mean))+
+  geom_line(aes(x=Processor,y=runtime_mean))+
+  scale_color_viridis(discrete=TRUE)+
+  labs(title='Run Time Mean of Different Processors',
+       x='',
+       y='Run Time (in seconds)') +
+  theme_minimal()+
+  theme(axis.line = element_line(),
+        panel.grid.major = element_blank(),
+        panel.grid.minor = element_blank(),
+        panel.border = element_blank(),
+        panel.background = element_blank())+
+  geom_text(aes(label=as.character(runtime_mean)))
+while (!is.null(dev.list()))  dev.off()
+knitr::include_graphics("../figs/runtime_mean.jpeg")
+```
+
+
+```{r}
+```
+
