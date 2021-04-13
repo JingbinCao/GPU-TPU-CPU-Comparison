@@ -1,6 +1,6 @@
-# Applied Data Science @ Columbia
+# 5291 Project @ Columbia University
 ## Spring 2021
-## Project 1: A "data story" on how Americans vote
+## Project 1: A "data story" on CPU, TPU, and GPU
 
 <img src="figs/title1.jpeg" width="500">
 
