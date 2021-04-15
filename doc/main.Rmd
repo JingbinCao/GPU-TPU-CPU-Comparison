@@ -16,7 +16,8 @@ packages.used=as.list(
   "ggplot2",
   "car",
   "dplyr",
-  "psych")
+  "psych",
+  "jpeg")
 )
 
 check.pkg = function(x){
@@ -27,6 +28,7 @@ check.pkg = function(x){
 
 lapply(packages.used, check.pkg)
 library(dplyr)
+library(jpeg)
 library(car)
 library(tidyverse)
 library(haven)
@@ -48,8 +50,13 @@ We tested three types of processors CPU, GPU, and TPU for three kinds of matrix 
 # Simple Plots
 Here is the general visualization for the performances of each processor under three matrix operations:
 ```{r}
+jpeg(filename = "../figs/overview.jpeg", width = 1000, height = 800,quality = 10000)
 ggplot(data = data, aes(x = Processor, y = log10(Runtime))) +
 geom_boxplot(aes(fill = MatrixOperation))
+while (!is.null(dev.list()))  dev.off()
+```
+```{r out.width = "90%", fig.align = "center", echo=FALSE}
+knitr::include_graphics("../figs/overview.jpeg")
 ```
 # Zhanhao Zhang Part I
 ## Pros & Cons of Each Processor  
@@ -207,6 +214,7 @@ anova(modB, modF)
 # Zhanhao Zhang Part II
 ## General Visualization
 ```{r,echo=FALSE}
+plot_list = list()
 for(operation in unique(data$MatrixOperation)){
   p <- data %>%
     filter(MatrixOperation == operation) %>%
@@ -215,11 +223,26 @@ for(operation in unique(data$MatrixOperation)){
     ggtitle(paste0("Matrix Operation: ", operation)) +
     #facet_wrap( ~ MatrixOperation, scales = "free", nrow = 1) +
     guides(fill=guide_legend(title = "Matrix Size"))
-  print(p)
+  #print(p)
+  plot_list[[operation]] = p
 }
+
+# Save plots to jpeg
+pdf("../figs/operations_plots.pdf")
+for(operation in unique(data$MatrixOperation)){
+  print(plot_list[[operation]])
+}  
+while (!is.null(dev.list()))  dev.off()
 ```
+\begin{figure}
+\includegraphics[page=1,width=0.5\linewidth]{../figs/operations_plots.pdf}
+\includegraphics[page=2,width=0.5\linewidth]{../figs/operations_plots.pdf}
+\includegraphics[page=3,width=0.5\linewidth]{../figs/operations_plots.pdf}
+\caption{\label{fig:operation} Operation v.s. Processors for Each Matrix Size}
+\end{figure}
 
 ```{r,echo=FALSE}
+plot_list = list()
 for(size in unique(data$MatrixSize)){
   p <- data %>%
     filter(MatrixSize == size) %>%
@@ -228,10 +251,33 @@ for(size in unique(data$MatrixSize)){
     ggtitle(paste0("Matrix Size: ", size)) +
     #facet_wrap( ~ MatrixOperation, scales = "free", nrow = 1) +
     guides(fill=guide_legend(title = "Processor"))
-  print(p)
+ #print(p)
+  plot_list[[size]] = p
 }
+
+# Save plots to jpeg
+pdf("../figs/size_plots.pdf")
+for(size in unique(data$MatrixSize)){
+  print(plot_list[[size]])
+}  
+while (!is.null(dev.list()))  dev.off()
+
 ```
+\begin{figure}
+\includegraphics[page=1,width=0.333\linewidth]{../figs/size_plots.pdf}
+\includegraphics[page=2,width=0.333\linewidth]{../figs/size_plots.pdf}
+\includegraphics[page=3,width=0.333\linewidth]{../figs/size_plots.pdf}
+\includegraphics[page=4,width=0.333\linewidth]{../figs/size_plots.pdf}
+\includegraphics[page=5,width=0.333\linewidth]{../figs/size_plots.pdf}
+\includegraphics[page=6,width=0.333\linewidth]{../figs/size_plots.pdf}
+\includegraphics[page=7,width=0.333\linewidth]{../figs/size_plots.pdf}
+\includegraphics[page=8,width=0.333\linewidth]{../figs/size_plots.pdf}
+\includegraphics[page=9,width=0.333\linewidth]{../figs/size_plots.pdf}
+\caption{\label{fig:Size} Matrix Size v.s. Operations for Each Processor.}
+\end{figure}
+
 ```{r, echo = FALSE}
+plot_list = list()
 for(operation in unique(data$MatrixOperation)){
   p <- data %>%
     filter(MatrixOperation == operation) %>%
@@ -240,9 +286,22 @@ for(operation in unique(data$MatrixOperation)){
     ggtitle(paste0("Matrix Operation: ", operation)) +
     #facet_wrap( ~ MatrixOperation, scales = "free", nrow = 1) +
     guides(fill=guide_legend(title = "Processor"))
-  print(p)
+  #print(p)
+  plot_list[[operation]] = p
 }
+
+pdf("../figs/operation_size.pdf")
+for(operation in unique(data$MatrixOperation)){
+  print(plot_list[[operation]])
+}  
+while (!is.null(dev.list()))  dev.off()
 ```
+\begin{figure}
+\includegraphics[page=1,width=0.5\linewidth]{../figs/operation_size.pdf}
+\includegraphics[page=2,width=0.5\linewidth]{../figs/operation_size.pdf}
+\includegraphics[page=3,width=0.5\linewidth]{../figs/operation_size.pdf}
+\caption{\label{fig:operation} Operation v.s. Matrix Size for Each Processor}
+\end{figure}
 
 # Lixian Chen Part II
 ## Plots
