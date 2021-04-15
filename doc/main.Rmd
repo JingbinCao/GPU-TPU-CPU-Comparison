@@ -1,5 +1,5 @@
 ---
-title: "Project on CPU, GGPU, and TPU"
+title: "Project on CPU, GPU, and TPU"
 author: "Lixian Chen, Zhanhao Zhang, Jingbin Cao"
 date: "4/14/2021"
 output: pdf_document
@@ -58,6 +58,40 @@ while (!is.null(dev.list()))  dev.off()
 ```{r out.width = "90%", fig.align = "center", echo=FALSE}
 knitr::include_graphics("../figs/overview.jpeg")
 ```
+
+# Jingbin Cao Part I
+One Way Anova for different matrix sized for each pair of processor and matrix operation:
+$\mu_0 = Matrix_{Size}=320$
+$\mu_1 = Matrix_{Size}=640$
+$\mu_2 = Matrix_{Size}=1280$
+$\mu_3 = Matrix_{Size}=2160$
+
+## Getting Data
+```{r}
+cpu_add <- data[data$Processor == "CPU" & data$MatrixOperation=="Addition" & data$MatrixSize >= 320,]
+cpu_mult <- data[data$Processor == "CPU" & data$MatrixOperation=="Multiplication" & data$MatrixSize >= 320,]
+cpu_inv <- data[data$Processor == "CPU" & data$MatrixOperation=="Invertion" & data$MatrixSize >= 320,]
+gpu_add <- data[data$Processor == "GPU" & data$MatrixOperation=="Addition" & data$MatrixSize >= 320,]
+gpu_mult <- data[data$Processor == "GPU" & data$MatrixOperation=="Multiplication" & data$MatrixSize >= 320,]
+gpu_inv <- data[data$Processor == "GPU" & data$MatrixOperation=="Invertion" & data$MatrixSize >= 320,]
+tpu_add <- data[data$Processor == "TPU" & data$MatrixOperation=="Addition" & data$MatrixSize >= 320,]
+tpu_mult <- data[data$Processor == "TPU" & data$MatrixOperation=="Multiplication" & data$MatrixSize >= 320,]
+tpu_inv <- data[data$Processor == "TPU" & data$MatrixOperation=="Invertion" & data$MatrixSize >= 320,]
+```
+## Anovas
+```{r}
+summary(aov(Runtime ~ MatrixSize, data=cpu_add))
+summary(aov(Runtime ~ MatrixSize, data=cpu_mult))
+summary(aov(Runtime ~ MatrixSize, data=cpu_inv))
+summary(aov(Runtime ~ MatrixSize, data=gpu_add))
+summary(aov(Runtime ~ MatrixSize, data=gpu_mult))
+summary(aov(Runtime ~ MatrixSize, data=gpu_inv))
+summary(aov(Runtime ~ MatrixSize, data=tpu_add))
+summary(aov(Runtime ~ MatrixSize, data=tpu_mult))
+summary(aov(Runtime ~ MatrixSize, data=tpu_inv))
+```
+
+
 
 # Zhanhao Zhang Part I  
 ## Pros & Cons of Each Processor  
@@ -376,3 +410,63 @@ boxplot(Runtime~Processor*MatrixOperation, data = size2560data, main="At the lev
 knitr::include_graphics("../figs/Operation_vs_runtime_size2560.jpeg")
 ```
 At the level of matrix size=2560, avoid using CPU for inversion and multiplication because its run-times are much bigger.
+
+```{r, message=FALSE, warning=FALSE}
+# Addition & CPU
+data[data$Processor == "CPU" & data$MatrixOperation=="Addition",] %>%
+ggplot() +
+geom_point(mapping = aes(x = MatrixSize, y = log(Runtime))) +
+geom_smooth(mapping = aes(x = MatrixSize, y = log(Runtime))) +
+labs(title = "For CPU and Addition with Different Matrix Size", x = "Matrix Size", y = "Runtime")
+# Multiplication & CPU
+data[data$Processor == "CPU" & data$MatrixOperation=="Multiplication",] %>%
+ggplot() +
+geom_point(mapping = aes(x = MatrixSize, y = log(Runtime))) +
+geom_smooth(mapping = aes(x = MatrixSize, y = log(Runtime))) +
+labs(title = "For CPU and Multiplication with Different Matrix Size", x = "Matrix Size", y = "Runtime")
+# Invertion & CPU
+data[data$Processor == "CPU" & data$MatrixOperation=="Invertion",] %>%
+ggplot() +
+geom_point(mapping = aes(x = MatrixSize, y = log(Runtime))) +
+geom_smooth(mapping = aes(x = MatrixSize, y = log(Runtime))) +
+labs(title = "For CPU and Invertion with Different Matrix Size", x = "Matrix Size", y = "Runtime")
+
+# Addition & GPU
+data[data$Processor == "GPU" & data$MatrixOperation=="Addition",] %>%
+ggplot() +
+geom_point(mapping = aes(x = MatrixSize, y = log(Runtime))) +
+geom_smooth(mapping = aes(x = MatrixSize, y = log(Runtime))) +
+labs(title = "For GPU and Addition with Different Matrix Size", x = "Matrix Size", y = "Runtime")
+# Multiplication & GPU
+data[data$Processor == "GPU" & data$MatrixOperation=="Multiplication",] %>%
+ggplot() +
+geom_point(mapping = aes(x = MatrixSize, y = log(Runtime))) +
+geom_smooth(mapping = aes(x = MatrixSize, y = log(Runtime))) +
+labs(title = "For CPU and Multiplication with Different Matrix Size", x = "Matrix Size", y = "Runtime")
+# Invertion & GPU
+data[data$Processor == "GPU" & data$MatrixOperation=="Invertion",] %>%
+ggplot() +
+geom_point(mapping = aes(x = MatrixSize, y = log(Runtime))) +
+geom_smooth(mapping = aes(x = MatrixSize, y = log(Runtime))) +
+labs(title = "For CPU and Invertion with Different Matrix Size", x = "Matrix Size", y = "Runtime")
+
+# Addition & TPU
+data[data$Processor == "TPU" & data$MatrixOperation=="Addition",] %>%
+ggplot() +
+geom_point(mapping = aes(x = MatrixSize, y = log(Runtime))) +
+geom_smooth(mapping = aes(x = MatrixSize, y = log(Runtime))) +
+labs(title = "For TPU and Addition with Different Matrix Size", x = "Matrix Size", y = "Runtime")
+# Multiplication & TPU
+data[data$Processor == "TPU" & data$MatrixOperation=="Multiplication",] %>%
+ggplot() +
+geom_point(mapping = aes(x = MatrixSize, y = log(Runtime))) +
+geom_smooth(mapping = aes(x = MatrixSize, y = log(Runtime))) +
+labs(title = "For TPU and Multiplication with Different Matrix Size", x = "Matrix Size", y = "Runtime")
+# Invertion & TPU
+data[data$Processor == "TPU" & data$MatrixOperation=="Invertion",] %>%
+ggplot() +
+geom_point(mapping = aes(x = MatrixSize, y = log(Runtime))) +
+geom_smooth(mapping = aes(x = MatrixSize, y = log(Runtime))) +
+labs(title = "For TPU and Invertion with Different Matrix Size", x = "Matrix Size", y = "Runtime")
+```
+
