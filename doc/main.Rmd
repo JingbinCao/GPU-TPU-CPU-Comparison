@@ -39,7 +39,7 @@ library(ggplot2)
 library(psych)
 ```
 
-
+# Read Data
 ```{r}
 data <- read.csv("../data/Runtime.csv")
 head(data)
@@ -58,10 +58,11 @@ while (!is.null(dev.list()))  dev.off()
 ```{r out.width = "90%", fig.align = "center", echo=FALSE}
 knitr::include_graphics("../figs/overview.jpeg")
 ```
-# Zhanhao Zhang Part I
+
+# Zhanhao Zhang Part I  
 ## Pros & Cons of Each Processor  
 
-When matrix size is the same, is there any processor or operation effects? Or is there any interactive effect?
+When matrix size is the same, is there any processor or operation effects? Or is there any interactive effect?  
 ```{r summary}
 df_cpu <- data[data$Processor == "CPU",]
 lm(Runtime ~ MatrixSize + as.factor(MatrixOperation), data = df_cpu) %>%
@@ -75,10 +76,11 @@ lm(Runtime ~ MatrixSize + as.factor(MatrixOperation), data = df_gpu) %>%
 ```
 
 # Lixian Chen Part I
-## Analysis
 When the processor is the same, is there any operation and matrix size effect? We want to answer the following question: in each scenario, which processor should we use?
 
+## Getting Data Ready
 ```{r, prepare data}
+# Read Data
 df <- fread("../data/Runtime.csv", header=TRUE)
 attach(df)
 
@@ -91,13 +93,8 @@ CPUdata <- df %>% filter(Processor=="CPU")
 GPUdata <- df %>% filter(Processor=="GPU")
 TPUdata <- df %>% filter(Processor=="TPU")
 
-#op=par(mfrow=c(1,3))
-interaction.plot(CPUdata$MatrixSize, CPUdata$MatrixOperation, CPUdata$Runtime)
-interaction.plot(GPUdata$MatrixSize, GPUdata$MatrixOperation, GPUdata$Runtime)
-interaction.plot(TPUdata$MatrixSize, TPUdata$MatrixOperation, TPUdata$Runtime)
-#par(op)
 
-library(psych)
+
 describeBy(df$Runtime,group = df$MatrixSize, mat = TRUE) %>%  #create dataframe
   select(MatrixSize=group1, N=n, Mean=mean, SD=sd, Median=median, Min=min, Max=max, 
          Skew=skew, Kurtosis=kurtosis, SEM=se)
@@ -126,18 +123,11 @@ size320data <- df %>% filter(MatrixSize==320)
 size640data <- df %>% filter(MatrixSize==640)
 size1280data <- df %>% filter(MatrixSize==1280)
 size2560data <- df %>% filter(MatrixSize==2560)
+```
 
-boxplot(Runtime~Processor*MatrixOperation, data = size320data, main="At the level of matrix size=320")
-tapply(Runtime,list(Processor, MatrixOperation),mean, data = size320data)
-boxplot(Runtime~Processor*MatrixOperation, data = size640data, main="At the level of matrix size=640")
-tapply(Runtime,list(Processor, MatrixOperation),mean, data = size640data)
-boxplot(Runtime~Processor*MatrixOperation, data = size1280data, main="At the level of matrix size=1280")
-tapply(Runtime,list(Processor, MatrixOperation),mean, data = size1280data)
-boxplot(Runtime~Processor*MatrixOperation, data = size2560data, main="At the level of matrix size=2560")
-tapply(Runtime,list(Processor, MatrixOperation),mean, data = size2560data)
-# At the level of matrix size=2560, avoid using CPU for inversion and multiplication, because its runtimes 
-# are much bigger
-
+## Analysis
+### Anova
+```{r}
 #320
 fit2<-lm(Runtime~Processor+MatrixOperation, data = size320data)
 summary(fit2)
@@ -207,9 +197,15 @@ modB<-lm(Runtime~MatrixOperation, data = size2560data)
 
 anova(modA, modF)
 anova(modB, modF)
-
 ```
 
+### Mean of Runtime
+```{r}
+tapply(Runtime,list(Processor, MatrixOperation),mean, data = size320data)
+tapply(Runtime,list(Processor, MatrixOperation),mean, data = size640data)
+tapply(Runtime,list(Processor, MatrixOperation),mean, data = size1280data)
+tapply(Runtime,list(Processor, MatrixOperation),mean, data = size2560data)
+```
 
 # Zhanhao Zhang Part II
 ## General Visualization
@@ -261,7 +257,6 @@ for(size in unique(data$MatrixSize)){
   print(plot_list[[size]])
 }  
 while (!is.null(dev.list()))  dev.off()
-
 ```
 \begin{figure}
 \includegraphics[page=1,width=0.333\linewidth]{../figs/size_plots.pdf}
@@ -303,16 +298,81 @@ while (!is.null(dev.list()))  dev.off()
 \caption{\label{fig:operation} Operation v.s. Matrix Size for Each Processor}
 \end{figure}
 
-# Lixian Chen Part II
-## Plots
+# Lixian Chen Part II: Plots
+## Interaction Plots  
 ```{r, interaction plots}
-#Interaction Plots
-op=par(mfrow=c(1,1))
-#op=par(mfrow=c(2,1))
+jpeg(filename = "../figs/interaction_size_time.jpeg", width = 600, height = 400,quality = 10000)
 interaction.plot(df$MatrixSize, df$MatrixOperation, df$Runtime)
-interaction.plot(df$MatrixSize, df$MatrixOperation, log(df$Runtime))
-#par(op)
-
-
+while (!is.null(dev.list()))  dev.off()
+```
+```{r out.width = "90%", fig.align = "center", echo=FALSE}
+knitr::include_graphics("../figs/interaction_size_time.jpeg")
 ```
 
+```{r}
+jpeg(filename = "../figs/interaction_size_log_time.jpeg", width = 600, height = 400,quality = 10000)
+interaction.plot(df$MatrixSize, df$MatrixOperation, log(df$Runtime))
+while (!is.null(dev.list()))  dev.off()
+```
+```{r out.width = "90%", fig.align = "center", echo=FALSE}
+knitr::include_graphics("../figs/interaction_size_log_time.jpeg")
+```
+
+```{r}
+jpeg(filename = "../figs/interaction_CPU_size_time.jpeg", width = 600, height = 400,quality = 10000)
+interaction.plot(CPUdata$MatrixSize, CPUdata$MatrixOperation, CPUdata$Runtime)
+```
+```{r out.width = "90%", fig.align = "center", echo=FALSE}
+knitr::include_graphics("../figs/interaction_CPU_size_time.jpeg")
+```
+
+```{r}
+jpeg(filename = "../figs/interaction_GPU_size_time.jpeg", width = 600, height = 400,quality = 10000)
+interaction.plot(GPUdata$MatrixSize, GPUdata$MatrixOperation, GPUdata$Runtime)
+```
+```{r out.width = "90%", fig.align = "center", echo=FALSE}
+knitr::include_graphics("../figs/interaction_GPU_size_time.jpeg")
+```
+
+```{r}
+jpeg(filename = "../figs/interaction_TPU_size_time.jpeg", width = 600, height = 400,quality = 10000)
+interaction.plot(TPUdata$MatrixSize, TPUdata$MatrixOperation, TPUdata$Runtime)
+```
+```{r out.width = "90%", fig.align = "center", echo=FALSE}
+knitr::include_graphics("../figs/interaction_GPU_size_time.jpeg")
+```
+
+## Boxplots
+
+```{r}
+jpeg(filename = "../figs/Operation_vs_runtime_size320.jpeg", width = 700, height = 400,quality = 10000)
+boxplot(Runtime~Processor*MatrixOperation, data = size320data, main="At the level of matrix size=320")
+```
+```{r out.width = "90%", fig.align = "center", echo=FALSE}
+knitr::include_graphics("../figs/Operation_vs_runtime_size320.jpeg")
+```
+
+```{r}
+jpeg(filename = "../figs/Operation_vs_runtime_size640.jpeg", width = 700, height = 400,quality = 10000)
+boxplot(Runtime~Processor*MatrixOperation, data = size640data, main="At the level of matrix size=640")
+```
+```{r out.width = "90%", fig.align = "center", echo=FALSE}
+knitr::include_graphics("../figs/Operation_vs_runtime_size640.jpeg")
+```
+
+```{r}
+jpeg(filename = "../figs/Operation_vs_runtime_size1280.jpeg", width = 700, height = 400,quality = 10000)
+boxplot(Runtime~Processor*MatrixOperation, data = size1280data, main="At the level of matrix size=1280")
+```
+```{r out.width = "90%", fig.align = "center", echo=FALSE}
+knitr::include_graphics("../figs/Operation_vs_runtime_size1280.jpeg")
+```
+
+```{r}
+jpeg(filename = "../figs/Operation_vs_runtime_size2560.jpeg", width = 700, height = 400,quality = 10000)
+boxplot(Runtime~Processor*MatrixOperation, data = size2560data, main="At the level of matrix size=2560")
+```
+```{r out.width = "90%", fig.align = "center", echo=FALSE}
+knitr::include_graphics("../figs/Operation_vs_runtime_size2560.jpeg")
+```
+At the level of matrix size=2560, avoid using CPU for inversion and multiplication because its run-times are much bigger.
