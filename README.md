@@ -2,7 +2,7 @@
 ## Spring 2021
 ## Project 1: A "data story" on CPU, TPU, and GPU
 
-<img src="figs/title1.jpeg" width="500">
+<img src="https://github.com/JingbinCao/Project-5291/blob/master/figs/overview.jpeg">
 
 ### [Project Description](doc/)
 This is the first and only *individual* (as opposed to *team*) this semester. 
