@@ -21,9 +21,13 @@ data
  # geom_boxplot(aes(fill = MatrixOperation))
 for(operation in unique(data$MatrixOperation)){
   p <- data %>%
-    filter(MatrixOperation == operation) %>%
+    filter(MatrixOperation == operation, MatrixSize <= 2560) %>%
+    group_by(MatrixSize, MatrixOperation, Processor) %>%
+    summarize(Runtime = mean(Runtime)) %>%
     ggplot(aes(x = Processor, y = log10(Runtime))) +
-    geom_boxplot(aes(fill = as.factor(MatrixSize))) +
+    #geom_boxplot(aes(fill = as.factor(MatrixSize))) +
+    geom_bar(aes(fill = as.factor(MatrixSize)), stat = "identity",
+             position = "dodge") +
     ggtitle(paste0("Matrix Operation: ", operation)) +
     #facet_wrap( ~ MatrixOperation, scales = "free", nrow = 1) +
     guides(fill=guide_legend(title = "Matrix Size"))
@@ -34,8 +38,12 @@ for(operation in unique(data$MatrixOperation)){
 for(size in unique(data$MatrixSize)){
   p <- data %>%
     filter(MatrixSize == size) %>%
+    group_by(MatrixSize, MatrixOperation, Processor) %>%
+    summarize(Runtime = mean(Runtime)) %>%
     ggplot(aes(x = Processor, y = log10(Runtime))) +
-    geom_boxplot(aes(fill = as.factor(MatrixOperation))) +
+    #geom_boxplot(aes(fill = as.factor(MatrixOperation))) +
+    geom_bar(aes(fill = as.factor(MatrixOperation)), position = "dodge",
+             stat = "identity") +
     ggtitle(paste0("Matrix Size: ", size)) +
     #facet_wrap( ~ MatrixOperation, scales = "free", nrow = 1) +
     guides(fill=guide_legend(title = "Matrix Operation"))
@@ -46,8 +54,12 @@ for(size in unique(data$MatrixSize)){
 for(size in unique(data$MatrixSize)){
   p <- data %>%
     filter(MatrixSize == size) %>%
+    group_by(MatrixSize, MatrixOperation, Processor) %>%
+    summarize(Runtime = mean(Runtime)) %>%
     ggplot(aes(x = MatrixOperation, y = log10(Runtime))) +
-    geom_boxplot(aes(fill = as.factor(Processor))) +
+    #geom_boxplot(aes(fill = as.factor(Processor))) +
+    geom_bar(aes(fill = as.factor(Processor)), position = "dodge", 
+             stat = "identity") +
     ggtitle(paste0("Matrix Size: ", size)) +
     #facet_wrap( ~ MatrixOperation, scales = "free", nrow = 1) +
     guides(fill=guide_legend(title = "Processor"))
@@ -57,9 +69,13 @@ for(size in unique(data$MatrixSize)){
 ```{r}
 for(operation in unique(data$MatrixOperation)){
   p <- data %>%
-    filter(MatrixOperation == operation) %>%
+    filter(MatrixOperation == operation, MatrixSize <= 2560) %>%
+    group_by(MatrixSize, MatrixOperation, Processor) %>%
+    summarize(Runtime = mean(Runtime)) %>%
     ggplot(aes(x = as.factor(MatrixSize), y = log10(Runtime))) +
-    geom_boxplot(aes(fill = as.factor(Processor))) +
+    #geom_boxplot(aes(fill = as.factor(Processor))) +
+    geom_bar(aes(fill = as.factor(Processor)), stat = "identity", 
+             alpha = 1, position = "dodge") +
     ggtitle(paste0("Matrix Operation: ", operation)) +
     #facet_wrap( ~ MatrixOperation, scales = "free", nrow = 1) +
     guides(fill=guide_legend(title = "Processor"))
