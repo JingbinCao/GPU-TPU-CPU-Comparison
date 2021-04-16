@@ -2,7 +2,10 @@
 title: "Project on CPU, GPU, and TPU"
 author: "Lixian Chen, Zhanhao Zhang, Jingbin Cao"
 date: "4/14/2021"
-output: pdf_document
+header-includes: \usepackage{graphicx}
+output: 
+  pdf_document:
+    keep_tex: true
 ---
 # Preparing Required Packages
 ```{r load libraries, warning=FALSE, message=FALSE, include=FALSE}
@@ -341,7 +344,7 @@ while (!is.null(dev.list()))  dev.off()
 \includegraphics[page=1,width=0.5\linewidth]{../figs/operation_size.pdf}
 \includegraphics[page=2,width=0.5\linewidth]{../figs/operation_size.pdf}
 \includegraphics[page=3,width=0.5\linewidth]{../figs/operation_size.pdf}
-\caption{\label{fig:operation} Operation v.s. Matrix Size for Each Processor}
+\caption{\label{fig:operation_size} Operation v.s. Matrix Size for Each Processor}
 \end{figure}
 
 # Lixian Chen Part II: Plots
