@@ -11,6 +11,7 @@ knitr::opts_chunk$set(echo = TRUE)
 
 ## Load Data
 ```{r}
+library(tidyverse)
 data <- read.csv("../Data/Runtime.csv")
 data
 ```

@@ -60,11 +60,12 @@ knitr::include_graphics("../figs/overview.jpeg")
 ```
 
 # Jingbin Cao Part I
+Research different Matrix Sizes
 One Way Anova for different matrix sized for each pair of processor and matrix operation:
-$\mu_0 = Matrix_{Size}=320$
-$\mu_1 = Matrix_{Size}=640$
-$\mu_2 = Matrix_{Size}=1280$
-$\mu_3 = Matrix_{Size}=2160$
+$\mu_1 = Matrix_{Size}=320$
+$\mu_2 = Matrix_{Size}=640$
+$\mu_3 = Matrix_{Size}=1280$
+$\mu_4 = Matrix_{Size}=2160$
 
 ## Getting Data
 ```{r}
@@ -80,15 +81,15 @@ tpu_inv <- data[data$Processor == "TPU" & data$MatrixOperation=="Invertion" & da
 ```
 ## Anovas
 ```{r}
-summary(aov(Runtime ~ MatrixSize, data=cpu_add))
-summary(aov(Runtime ~ MatrixSize, data=cpu_mult))
-summary(aov(Runtime ~ MatrixSize, data=cpu_inv))
-summary(aov(Runtime ~ MatrixSize, data=gpu_add))
-summary(aov(Runtime ~ MatrixSize, data=gpu_mult))
-summary(aov(Runtime ~ MatrixSize, data=gpu_inv))
-summary(aov(Runtime ~ MatrixSize, data=tpu_add))
-summary(aov(Runtime ~ MatrixSize, data=tpu_mult))
-summary(aov(Runtime ~ MatrixSize, data=tpu_inv))
+summary(aov(Runtime ~ as.factor(MatrixSize), data=cpu_add))
+summary(aov(Runtime ~ as.factor(MatrixSize), data=cpu_mult))
+summary(aov(Runtime ~ as.factor(MatrixSize), data=cpu_inv))
+summary(aov(Runtime ~ as.factor(MatrixSize), data=gpu_add))
+summary(aov(Runtime ~ as.factor(MatrixSize), data=gpu_mult))
+summary(aov(Runtime ~ as.factor(MatrixSize), data=gpu_inv))
+summary(aov(Runtime ~ as.factor(MatrixSize), data=tpu_add))
+summary(aov(Runtime ~ as.factor(MatrixSize), data=tpu_mult))
+summary(aov(Runtime ~ as.factor(MatrixSize), data=tpu_inv))
 ```
 
 
@@ -101,10 +102,20 @@ When matrix size is the same, is there any processor or operation effects? Or is
 df_cpu <- data[data$Processor == "CPU",]
 lm(Runtime ~ MatrixSize + as.factor(MatrixOperation), data = df_cpu) %>%
   summary()
+df_gpu <- data[data$Processor == "GPU",]
+lm(Runtime ~ MatrixSize + as.factor(MatrixOperation), data = df_gpu) %>%
+  summary()
 df_tpu <- data[data$Processor == "TPU",]
 lm(Runtime ~ MatrixSize + as.factor(MatrixOperation), data = df_tpu) %>%
   summary()
-df_gpu <- data[data$Processor == "GPU",]
+
+# Reduced Model for TPU
+df_tpu <- data[data$Processor == "TPU",]
+lm(Runtime ~ as.factor(MatrixOperation), data = df_tpu) %>%
+  summary()
+
+# Reduced Model for GPU
+df_gpu <- data[data$Processor == "GPU" & data$MatrixOperation != "Multiplication",]
 lm(Runtime ~ MatrixSize + as.factor(MatrixOperation), data = df_gpu) %>%
   summary()
 ```
@@ -113,7 +124,7 @@ lm(Runtime ~ MatrixSize + as.factor(MatrixOperation), data = df_gpu) %>%
 When the processor is the same, is there any operation and matrix size effect? We want to answer the following question: in each scenario, which processor should we use?
 
 ## Getting Data Ready
-```{r, prepare data}
+```{r, prepare data, message=FALSE, warning=FALSE}
 # Read Data
 df <- fread("../data/Runtime.csv", header=TRUE)
 attach(df)
@@ -162,25 +173,26 @@ size2560data <- df %>% filter(MatrixSize==2560)
 ## Analysis
 ### Anova
 ```{r}
-#320
-fit2<-lm(Runtime~Processor+MatrixOperation, data = size320data)
+############ 320
+fit2<-lm(log10(Runtime)~Processor+MatrixOperation, data = size320data)
 summary(fit2)
-fit1<-lm(Runtime~Processor*MatrixOperation, data = size320data)
+fit1<-lm(log10(Runtime)~Processor*MatrixOperation, data = size320data)
 summary(fit1)
 anova(fit2, fit1)
 
-mod320<-aov(Runtime~Processor*MatrixOperation, data = size320data)
+mod320<-aov(log10(Runtime)~Processor*MatrixOperation, data = size320data)
 #summary(mod320)
 Anova(mod320,type="III")
 
-modF<-lm(Runtime~Processor+MatrixOperation, data = size320data)
-modA<-lm(Runtime~Processor, data = size320data)
-modB<-lm(Runtime~MatrixOperation, data = size320data)
+modF<-lm(log10(Runtime)~Processor+MatrixOperation, data = size320data)
+modA<-lm(log10(Runtime)~Processor, data = size320data)
+modB<-lm(log10(Runtime)~MatrixOperation, data = size320data)
 
 anova(modA, modF)
 anova(modB, modF)
-
-#640
+```
+```{r}
+################# 640
 fit2_640<-lm(Runtime~Processor+MatrixOperation, data = size640data)
 summary(fit2)
 fit1_640<-lm(Runtime~Processor*MatrixOperation, data = size640data)
@@ -198,7 +210,7 @@ modB<-lm(Runtime~MatrixOperation, data = size640data)
 anova(modA, modF)
 anova(modB, modF)
 
-#1280
+##################### 1280
 fit2_1280<-lm(Runtime~Processor+MatrixOperation, data = size1280data)
 summary(fit2)
 fit1_1280<-lm(Runtime~Processor*MatrixOperation, data = size1280data)
@@ -215,7 +227,7 @@ anova(modB, modF)
 mod1280<-aov(Runtime~Processor*MatrixOperation, data = size1280data)
 Anova(mod1280,type="III")
 
-#2560
+################## 2560
 fit2_2560<-lm(Runtime~Processor+MatrixOperation, data = size2560data)
 summary(fit2)
 fit1_2560<-lm(Runtime~Processor*MatrixOperation, data = size2560data)
@@ -355,6 +367,7 @@ knitr::include_graphics("../figs/interaction_size_log_time.jpeg")
 ```{r}
 jpeg(filename = "../figs/interaction_CPU_size_time.jpeg", width = 600, height = 400,quality = 10000)
 interaction.plot(CPUdata$MatrixSize, CPUdata$MatrixOperation, CPUdata$Runtime)
+while (!is.null(dev.list()))  dev.off()
 ```
 ```{r out.width = "90%", fig.align = "center", echo=FALSE}
 knitr::include_graphics("../figs/interaction_CPU_size_time.jpeg")
@@ -363,6 +376,7 @@ knitr::include_graphics("../figs/interaction_CPU_size_time.jpeg")
 ```{r}
 jpeg(filename = "../figs/interaction_GPU_size_time.jpeg", width = 600, height = 400,quality = 10000)
 interaction.plot(GPUdata$MatrixSize, GPUdata$MatrixOperation, GPUdata$Runtime)
+while (!is.null(dev.list()))  dev.off()
 ```
 ```{r out.width = "90%", fig.align = "center", echo=FALSE}
 knitr::include_graphics("../figs/interaction_GPU_size_time.jpeg")
@@ -371,47 +385,52 @@ knitr::include_graphics("../figs/interaction_GPU_size_time.jpeg")
 ```{r}
 jpeg(filename = "../figs/interaction_TPU_size_time.jpeg", width = 600, height = 400,quality = 10000)
 interaction.plot(TPUdata$MatrixSize, TPUdata$MatrixOperation, TPUdata$Runtime)
+while (!is.null(dev.list()))  dev.off()
 ```
 ```{r out.width = "90%", fig.align = "center", echo=FALSE}
-knitr::include_graphics("../figs/interaction_GPU_size_time.jpeg")
+knitr::include_graphics("../figs/interaction_TPU_size_time.jpeg")
 ```
 
 ## Boxplots
 
 ```{r}
-jpeg(filename = "../figs/Operation_vs_runtime_size320.jpeg", width = 700, height = 400,quality = 10000)
+jpeg(filename = "../figs/Operation_vs_runtime_size320.jpeg", width = 1400, height = 400,quality = 10000)
 boxplot(Runtime~Processor*MatrixOperation, data = size320data, main="At the level of matrix size=320")
+while (!is.null(dev.list()))  dev.off()
 ```
 ```{r out.width = "90%", fig.align = "center", echo=FALSE}
 knitr::include_graphics("../figs/Operation_vs_runtime_size320.jpeg")
 ```
 
 ```{r}
-jpeg(filename = "../figs/Operation_vs_runtime_size640.jpeg", width = 700, height = 400,quality = 10000)
+jpeg(filename = "../figs/Operation_vs_runtime_size640.jpeg", width = 1400, height = 400,quality = 10000)
 boxplot(Runtime~Processor*MatrixOperation, data = size640data, main="At the level of matrix size=640")
+while (!is.null(dev.list()))  dev.off()
 ```
 ```{r out.width = "90%", fig.align = "center", echo=FALSE}
 knitr::include_graphics("../figs/Operation_vs_runtime_size640.jpeg")
 ```
 
 ```{r}
-jpeg(filename = "../figs/Operation_vs_runtime_size1280.jpeg", width = 700, height = 400,quality = 10000)
+jpeg(filename = "../figs/Operation_vs_runtime_size1280.jpeg", width = 1400, height = 400,quality = 10000)
 boxplot(Runtime~Processor*MatrixOperation, data = size1280data, main="At the level of matrix size=1280")
+while (!is.null(dev.list()))  dev.off()
 ```
 ```{r out.width = "90%", fig.align = "center", echo=FALSE}
 knitr::include_graphics("../figs/Operation_vs_runtime_size1280.jpeg")
 ```
 
 ```{r}
-jpeg(filename = "../figs/Operation_vs_runtime_size2560.jpeg", width = 700, height = 400,quality = 10000)
+jpeg(filename = "../figs/Operation_vs_runtime_size2560.jpeg", width = 1400, height = 400,quality = 10000)
 boxplot(Runtime~Processor*MatrixOperation, data = size2560data, main="At the level of matrix size=2560")
+while (!is.null(dev.list()))  dev.off()
 ```
 ```{r out.width = "90%", fig.align = "center", echo=FALSE}
 knitr::include_graphics("../figs/Operation_vs_runtime_size2560.jpeg")
 ```
 At the level of matrix size=2560, avoid using CPU for inversion and multiplication because its run-times are much bigger.
 
-```{r, message=FALSE, warning=FALSE}
+```{r, message=FALSE, warning=FALSE, echo=FALSE}
 # Addition & CPU
 data[data$Processor == "CPU" & data$MatrixOperation=="Addition",] %>%
 ggplot() +
@@ -442,31 +461,31 @@ data[data$Processor == "GPU" & data$MatrixOperation=="Multiplication",] %>%
 ggplot() +
 geom_point(mapping = aes(x = MatrixSize, y = log(Runtime))) +
 geom_smooth(mapping = aes(x = MatrixSize, y = log(Runtime))) +
-labs(title = "For CPU and Multiplication with Different Matrix Size", x = "Matrix Size", y = "Runtime")
+labs(title = "For GPU and Multiplication with Different Matrix Size", x = "Matrix Size", y = "Runtime")
 # Invertion & GPU
 data[data$Processor == "GPU" & data$MatrixOperation=="Invertion",] %>%
 ggplot() +
 geom_point(mapping = aes(x = MatrixSize, y = log(Runtime))) +
 geom_smooth(mapping = aes(x = MatrixSize, y = log(Runtime))) +
-labs(title = "For CPU and Invertion with Different Matrix Size", x = "Matrix Size", y = "Runtime")
+labs(title = "For GPU and Invertion with Different Matrix Size", x = "Matrix Size", y = "Runtime")
 
 # Addition & TPU
 data[data$Processor == "TPU" & data$MatrixOperation=="Addition",] %>%
 ggplot() +
-geom_point(mapping = aes(x = MatrixSize, y = log(Runtime))) +
-geom_smooth(mapping = aes(x = MatrixSize, y = log(Runtime))) +
+geom_point(mapping = aes(x = MatrixSize, y = Runtime)) +
+geom_smooth(mapping = aes(x = MatrixSize, y = Runtime)) +
 labs(title = "For TPU and Addition with Different Matrix Size", x = "Matrix Size", y = "Runtime")
 # Multiplication & TPU
 data[data$Processor == "TPU" & data$MatrixOperation=="Multiplication",] %>%
 ggplot() +
-geom_point(mapping = aes(x = MatrixSize, y = log(Runtime))) +
-geom_smooth(mapping = aes(x = MatrixSize, y = log(Runtime))) +
+geom_point(mapping = aes(x = MatrixSize, y = Runtime)) +
+geom_smooth(mapping = aes(x = MatrixSize, y = Runtime)) +
 labs(title = "For TPU and Multiplication with Different Matrix Size", x = "Matrix Size", y = "Runtime")
 # Invertion & TPU
 data[data$Processor == "TPU" & data$MatrixOperation=="Invertion",] %>%
 ggplot() +
-geom_point(mapping = aes(x = MatrixSize, y = log(Runtime))) +
-geom_smooth(mapping = aes(x = MatrixSize, y = log(Runtime))) +
+geom_point(mapping = aes(x = MatrixSize, y = Runtime)) +
+geom_smooth(mapping = aes(x = MatrixSize, y = Runtime)) +
 labs(title = "For TPU and Invertion with Different Matrix Size", x = "Matrix Size", y = "Runtime")
 ```
 
