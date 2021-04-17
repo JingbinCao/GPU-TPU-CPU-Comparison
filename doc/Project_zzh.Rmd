@@ -12,7 +12,9 @@ knitr::opts_chunk$set(echo = TRUE)
 ## Load Data
 ```{r}
 library(tidyverse)
+
 data <- read.csv("../Data/Runtime.csv")
+data <- data[data$MatrixSize <= 2560,]
 data
 ```
 
@@ -22,13 +24,14 @@ data
  # geom_boxplot(aes(fill = MatrixOperation))
 for(operation in unique(data$MatrixOperation)){
   p <- data %>%
-    filter(MatrixOperation == operation, MatrixSize <= 2560) %>%
+    dplyr::filter(MatrixOperation == operation, MatrixSize <= 2560) %>%
     group_by(MatrixSize, MatrixOperation, Processor) %>%
     summarize(Runtime = mean(Runtime)) %>%
-    ggplot(aes(x = Processor, y = log10(Runtime))) +
+    ggplot(aes(x = Processor, y = Runtime)) +
     #geom_boxplot(aes(fill = as.factor(MatrixSize))) +
     geom_bar(aes(fill = as.factor(MatrixSize)), stat = "identity",
              position = "dodge") +
+    scale_y_log10() +
     ggtitle(paste0("Matrix Operation: ", operation)) +
     #facet_wrap( ~ MatrixOperation, scales = "free", nrow = 1) +
     guides(fill=guide_legend(title = "Matrix Size"))
@@ -38,13 +41,14 @@ for(operation in unique(data$MatrixOperation)){
 ```{r}
 for(size in unique(data$MatrixSize)){
   p <- data %>%
-    filter(MatrixSize == size) %>%
+    dplyr::filter(MatrixSize == size) %>%
     group_by(MatrixSize, MatrixOperation, Processor) %>%
     summarize(Runtime = mean(Runtime)) %>%
-    ggplot(aes(x = Processor, y = log10(Runtime))) +
+    ggplot(aes(x = Processor, y = Runtime)) +
     #geom_boxplot(aes(fill = as.factor(MatrixOperation))) +
     geom_bar(aes(fill = as.factor(MatrixOperation)), position = "dodge",
              stat = "identity") +
+    scale_y_log10() +
     ggtitle(paste0("Matrix Size: ", size)) +
     #facet_wrap( ~ MatrixOperation, scales = "free", nrow = 1) +
     guides(fill=guide_legend(title = "Matrix Operation"))
@@ -54,13 +58,14 @@ for(size in unique(data$MatrixSize)){
 ```{r}
 for(size in unique(data$MatrixSize)){
   p <- data %>%
-    filter(MatrixSize == size) %>%
+    dplyr::filter(MatrixSize == size) %>%
     group_by(MatrixSize, MatrixOperation, Processor) %>%
     summarize(Runtime = mean(Runtime)) %>%
-    ggplot(aes(x = MatrixOperation, y = log10(Runtime))) +
+    ggplot(aes(x = MatrixOperation, y = Runtime)) +
     #geom_boxplot(aes(fill = as.factor(Processor))) +
     geom_bar(aes(fill = as.factor(Processor)), position = "dodge", 
              stat = "identity") +
+    scale_y_log10() +
     ggtitle(paste0("Matrix Size: ", size)) +
     #facet_wrap( ~ MatrixOperation, scales = "free", nrow = 1) +
     guides(fill=guide_legend(title = "Processor"))
@@ -70,13 +75,14 @@ for(size in unique(data$MatrixSize)){
 ```{r}
 for(operation in unique(data$MatrixOperation)){
   p <- data %>%
-    filter(MatrixOperation == operation, MatrixSize <= 2560) %>%
+    dplyr::filter(MatrixOperation == operation, MatrixSize <= 2560) %>%
     group_by(MatrixSize, MatrixOperation, Processor) %>%
     summarize(Runtime = mean(Runtime)) %>%
-    ggplot(aes(x = as.factor(MatrixSize), y = log10(Runtime))) +
+    ggplot(aes(x = as.factor(MatrixSize), y = Runtime)) +
     #geom_boxplot(aes(fill = as.factor(Processor))) +
     geom_bar(aes(fill = as.factor(Processor)), stat = "identity", 
              alpha = 1, position = "dodge") +
+    scale_y_log10() +
     ggtitle(paste0("Matrix Operation: ", operation)) +
     #facet_wrap( ~ MatrixOperation, scales = "free", nrow = 1) +
     guides(fill=guide_legend(title = "Processor"))
@@ -85,9 +91,107 @@ for(operation in unique(data$MatrixOperation)){
 ```
 
 ## Pros & Cons of Each Processor
+CPU:
 ```{r}
-df_cpu <- data[data$Processor == "TPU",]
-lm(Runtime ~ MatrixSize + as.factor(MatrixOperation), data = df_cpu) %>%
-  summary()
+df_cpu <- data[data$Processor == "CPU",]
+linreg_cpu <- lm(Runtime ~ MatrixSize + as.factor(MatrixOperation), 
+                 data = df_cpu)
+summary(linreg_cpu) %>% print()
+plot(linreg_cpu$residuals)
+abline(h=0, col="red")
+boxCox(linreg_cpu)
+
+linreg_cpu_trans <- lm(log(Runtime) ~ MatrixSize + as.factor(MatrixOperation), 
+                 data = df_cpu)
+plot(linreg_cpu_trans$residuals)
+abline(h=0, col="red")
+```
+GPU:
+```{r}
+df_gpu <- data[(data$Processor == "GPU") & (data$MatrixOperation != "Multiplication"),]
+linreg_gpu <- lm(Runtime ~ MatrixSize + as.factor(MatrixOperation), 
+                 data = df_gpu)
+summary(linreg_gpu) %>% print()
+plot(linreg_gpu$residuals)
+abline(h=0, col="red")
+boxCox(linreg_gpu)
+
+linreg_gpu_trans <- lm(Runtime^(-1/2) ~ MatrixSize +
+                         as.factor(MatrixOperation), data = df_gpu)
+summary(linreg_gpu_trans)
+plot(linreg_gpu_trans$residuals)
+abline(h=0, col="red")
+```
+
+TPU:
+```{r}
+df_tpu <- data[data$Processor == "TPU",]
+linreg_tpu <- lm(Runtime ~ MatrixSize + as.factor(MatrixOperation), 
+                 data = df_tpu)
+summary(linreg_tpu) %>% print()
+plot(linreg_tpu$residuals)
+abline(h=0, col="red")
+boxCox(linreg_tpu)
+
+linreg_tpu_trans <- lm(1/Runtime ~ MatrixSize +
+                         as.factor(MatrixOperation), data = df_tpu)
+summary(linreg_tpu_trans) %>% print()
+plot(linreg_tpu_trans$residuals)
+abline(h=0, col="red")
+```
+
+GPU Addition
+```{r}
+df_small <- data[(data$Processor == "GPU") & (data$MatrixOperation == "Addition"),]
+linreg_small <- lm(Runtime ~ MatrixSize, data = df_small)
+plot(linreg_small$residuals)
+abline(h=0, col="red")
+boxCox(linreg_small, lambda = seq(-10, 2, 0.1))
+
+linreg_small_transform <- lm(Runtime^(-9) ~ MatrixSize, data = df_small)
+plot(linreg_small_transform$residuals)
+abline(h=0, col="red")
+```
+GPU Multiplication
+```{r}
+df_small <- data[(data$Processor == "GPU") & (data$MatrixOperation == "Multiplication"),]
+linreg_small <- lm(Runtime ~ MatrixSize, data = df_small)
+plot(linreg_small$residuals)
+abline(h=0, col="red")
+boxCox(linreg_small, lambda = seq(-2, 2, 0.1))
+
+linreg_small_transform <- lm(Runtime^(-1.2) ~ MatrixSize, data = df_small)
+plot(linreg_small_transform$residuals)
+abline(h=0, col="red")
+```
+
+GPU Inversion
+```{r}
+df_small <- data[(data$Processor == "GPU") & (data$MatrixOperation == "Invertion"),]
+linreg_small <- lm(Runtime ~ MatrixSize, data = df_small)
+plot(linreg_small$residuals)
+abline(h=0, col="red")
+boxCox(linreg_small, lambda = seq(-2, 2, 0.1))
+
+linreg_small_transform <- lm(Runtime^(1/3) ~ poly(MatrixSize, 4), data = df_small)
+summary(linreg_small_transform)
+plot(linreg_small_transform)
+plot(linreg_small_transform$residuals)
+abline(h=0, col="red")
+```
+
+Big
+```{r}
+linreg_big <- lm(Runtime ~ MatrixOperation + Processor + MatrixSize, data = data)
+plot(linreg_big$residuals)
+abline(h=0, col="red")
+
+boxCox(linreg_big)
+linreg_big_trans <- lm(Runtime^(-1/3) ~ MatrixOperation * Processor + 
+                         poly(MatrixSize, 4),
+                       data = data)
+summary(linreg_big_trans)
+plot(linreg_big_trans$residuals)
+abline(h=0, col="red")
 ```
 
