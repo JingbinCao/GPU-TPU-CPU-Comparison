@@ -93,9 +93,63 @@ summary(aov(Runtime ~ as.factor(MatrixSize), data=gpu_inv))
 summary(aov(Runtime ~ as.factor(MatrixSize), data=tpu_add))
 summary(aov(Runtime ~ as.factor(MatrixSize), data=tpu_mult))
 summary(aov(Runtime ~ as.factor(MatrixSize), data=tpu_inv))
+
+# From the tables, we can see that only TPU & Multiplication and TPU & Inversion do not have Matrix Size effect, but other nine pairs do have Matrix Size effects.
+# plot(aov(Runtime ~ as.factor(MatrixSize), data=tpu_mult))
+# plot(aov(Runtime ~ as.factor(MatrixSize), data=tpu_inv))
+```
+## Plot Anova Residuals
+```{r}
+plot(which=1, aov(Runtime ~ as.factor(MatrixSize), data=cpu_add),main="Anova of Matrix Size Treatment Effect for CPU & Addition")
+plot(which=1, aov(Runtime ~ as.factor(MatrixSize), data=cpu_mult),main="Anova of Matrix Size Treatment Effect for CPU & Multiplication")
+plot(which=1, aov(Runtime ~ as.factor(MatrixSize), data=cpu_inv),main="Anova of Matrix Size Treatment Effect for CPU & Inversion")
+plot(which=1, aov(Runtime ~ as.factor(MatrixSize), data=gpu_add),main="Anova of Matrix Size Treatment Effect for GPU & Addition")
+plot(which=1, aov(Runtime ~ as.factor(MatrixSize), data=gpu_mult),main="Anova of Matrix Size Treatment Effect for GPU & Multiplication")
+plot(which=1, aov(Runtime ~ as.factor(MatrixSize), data=gpu_inv),main="Anova of Matrix Size Treatment Effect for GPU & Inversion")
+plot(which=1, aov(Runtime ~ as.factor(MatrixSize), data=tpu_add),main="Anova of Matrix Size Treatment Effect for TPU & Addition")
+plot(which=1, aov(Runtime ~ as.factor(MatrixSize), data=tpu_mult),main="Anova of Matrix Size Treatment Effect for TPU & Multiplication")
+plot(which=1, aov(Runtime ~ as.factor(MatrixSize), data=tpu_inv),main="Anova of Matrix Size Treatment Effect for TPU & Inversion")
 ```
 
 
+## Linear Regression for Matrix Size as continuous
+We just need to run linear regression on seven pairs that do have Matrix Size Effects
+```{r}
+lm(Runtime~as.numeric(MatrixSize),data=data[data$Processor == "CPU" & data$MatrixOperation=="Addition",])
+lm(Runtime~as.numeric(MatrixSize),data[data$Processor == "CPU" & data$MatrixOperation=="Multiplication",])
+lm(Runtime~as.numeric(MatrixSize),data[data$Processor == "CPU" & data$MatrixOperation=="Invertion",])
+lm(Runtime~as.numeric(MatrixSize),data=data[data$Processor == "GPU" & data$MatrixOperation=="Addition",])
+lm(Runtime~as.numeric(MatrixSize),data[data$Processor == "GPU" & data$MatrixOperation=="Multiplication",])
+lm(Runtime~as.numeric(MatrixSize),data[data$Processor == "GPU" & data$MatrixOperation=="Invertion",])
+lm(Runtime~as.numeric(MatrixSize),data=data[data$Processor == "TPU" & data$MatrixOperation=="Addition",])
+```
+## Plot LM
+```{r}
+plot(lm(Runtime~as.numeric(MatrixSize),data=data[data$Processor == "CPU" & data$MatrixOperation=="Addition",]), which=1, col=c("blue"))
+plot(lm(Runtime~as.numeric(MatrixSize),data[data$Processor == "CPU" & data$MatrixOperation=="Multiplication",]), which=1, col=c("blue"))
+plot(lm(Runtime~as.numeric(MatrixSize),data = data[data$Processor == "CPU" & data$MatrixOperation=="Invertion",]), which=1, col=c("blue"))
+plot(lm(Runtime~as.numeric(MatrixSize),data=data[data$Processor == "GPU" & data$MatrixOperation=="Addition",]), which=1, col=c("blue"), main = "Linear Regression of Different Matrix Sizes for GPU & Addition")
+plot(lm(Runtime~as.numeric(MatrixSize),data[data$Processor == "GPU" & data$MatrixOperation=="Multiplication",]), which=1, col=c("blue"))
+plot(lm(Runtime~as.numeric(MatrixSize),data[data$Processor == "GPU" & data$MatrixOperation=="Invertion",]), which=1, col=c("blue"))
+plot(lm(Runtime~as.numeric(MatrixSize),data=data[data$Processor == "TPU" & data$MatrixOperation=="Addition",]), which=1, col=c("blue"), main = "Linear Regression of Different Matrix Sizes for TPU & Addition")
+```
+```{r}
+jpeg(filename = "../figs/LM_GPU_Addition.jpeg", width = 600, height = 400,quality = 10000)
+plot(lm(Runtime~as.numeric(MatrixSize),data=data[data$Processor == "GPU" & data$MatrixOperation=="Addition",]), which=1, col=c("blue"), main = "Linear Regression of Different Matrix Sizes for GPU & Addition")
+while (!is.null(dev.list()))  dev.off()
+```
+```{r out.width = "90%", fig.align = "center", echo=FALSE}
+knitr::include_graphics("../figs/LM_GPU_Addition.jpeg")
+```
+
+```{r}
+jpeg(filename = "../figs/LM_TPU_Addition.jpeg", width = 600, height = 400,quality = 10000)
+plot(lm(Runtime~as.numeric(MatrixSize),data=data[data$Processor == "TPU" & data$MatrixOperation=="Addition",]), which=1, col=c("blue"), main = "Linear Regression of Different Matrix Sizes for TPU & Addition")
+while (!is.null(dev.list()))  dev.off()
+```
+```{r out.width = "90%", fig.align = "center", echo=FALSE}
+knitr::include_graphics("../figs/LM_TPU_Addition.jpeg")
+```
 
 # Zhanhao Zhang Part I  
 ## Pros & Cons of Each Processor  
@@ -431,6 +485,7 @@ while (!is.null(dev.list()))  dev.off()
 ```{r out.width = "90%", fig.align = "center", echo=FALSE}
 knitr::include_graphics("../figs/Operation_vs_runtime_size2560.jpeg")
 ```
+# Jingbin Cao Part II
 At the level of matrix size=2560, avoid using CPU for inversion and multiplication because its run-times are much bigger.
 
 ```{r, message=FALSE, warning=FALSE, echo=FALSE}
