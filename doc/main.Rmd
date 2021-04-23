@@ -1,11 +1,9 @@
 ---
 title: "Project on CPU, GPU, and TPU"
 author: "Lixian Chen, Zhanhao Zhang, Jingbin Cao"
-date: "4/14/2021"
-header-includes: \usepackage{graphicx}
+date: "4/22/2021"
 output: 
-  pdf_document:
-    keep_tex: true
+  pdf_document
 ---
 # Preparing Required Packages
 ```{r load libraries, warning=FALSE, message=FALSE, include=FALSE}
@@ -655,7 +653,7 @@ abline(0,0)
 
 # Zhanhao Zhang Part II
 ## General Visualization
-```{r,echo=FALSE}
+```{r,echo=FALSE, eval=FALSE}
 plot_list = list()
 for(operation in unique(data$MatrixOperation)){
   p <- data %>%
@@ -665,8 +663,8 @@ for(operation in unique(data$MatrixOperation)){
     ggtitle(paste0("Matrix Operation: ", operation)) +
     #facet_wrap( ~ MatrixOperation, scales = "free", nrow = 1) +
     guides(fill=guide_legend(title = "Matrix Size"))
-  #print(p)
-  plot_list[[operation]] = p
+  print(p)
+  #plot_list[[operation]] = p
 }
 
 # Save plots to jpeg
@@ -676,14 +674,9 @@ for(operation in unique(data$MatrixOperation)){
 }  
 while (!is.null(dev.list()))  dev.off()
 ```
-\begin{figure}
-\includegraphics[page=1,width=0.5\linewidth]{../figs/operations_plots.pdf}
-\includegraphics[page=2,width=0.5\linewidth]{../figs/operations_plots.pdf}
-\includegraphics[page=3,width=0.5\linewidth]{../figs/operations_plots.pdf}
-\caption{\label{fig:operation} Operation v.s. Processors for Each Matrix Size}
-\end{figure}
 
-```{r,echo=FALSE}
+
+```{r,echo=FALSE, eval=FALSE}
 plot_list = list()
 for(size in unique(data$MatrixSize)){
   p <- data %>%
@@ -704,20 +697,9 @@ for(size in unique(data$MatrixSize)){
 }  
 while (!is.null(dev.list()))  dev.off()
 ```
-\begin{figure}
-\includegraphics[page=1,width=0.333\linewidth]{../figs/size_plots.pdf}
-\includegraphics[page=2,width=0.333\linewidth]{../figs/size_plots.pdf}
-\includegraphics[page=3,width=0.333\linewidth]{../figs/size_plots.pdf}
-\includegraphics[page=4,width=0.333\linewidth]{../figs/size_plots.pdf}
-\includegraphics[page=5,width=0.333\linewidth]{../figs/size_plots.pdf}
-\includegraphics[page=6,width=0.333\linewidth]{../figs/size_plots.pdf}
-\includegraphics[page=7,width=0.333\linewidth]{../figs/size_plots.pdf}
-\includegraphics[page=8,width=0.333\linewidth]{../figs/size_plots.pdf}
-\includegraphics[page=9,width=0.333\linewidth]{../figs/size_plots.pdf}
-\caption{\label{fig:Size} Matrix Size v.s. Operations for Each Processor.}
-\end{figure}
 
-```{r, echo = FALSE}
+
+```{r, echo = FALSE, eval=FALSE}
 plot_list = list()
 for(operation in unique(data$MatrixOperation)){
   p <- data %>%
@@ -737,12 +719,6 @@ for(operation in unique(data$MatrixOperation)){
 }  
 while (!is.null(dev.list()))  dev.off()
 ```
-\begin{figure}
-\includegraphics[page=1,width=0.5\linewidth]{../figs/operation_size.pdf}
-\includegraphics[page=2,width=0.5\linewidth]{../figs/operation_size.pdf}
-\includegraphics[page=3,width=0.5\linewidth]{../figs/operation_size.pdf}
-\caption{\label{fig:operation_size} Operation v.s. Matrix Size for Each Processor}
-\end{figure}
 
 # Lixian Chen Part II: Plots
 ## Interaction Plots  
