@@ -481,19 +481,19 @@ boxplot(Runtime~Processor*MatrixOperation)
 round(tapply(Runtime,list(Processor, MatrixOperation),mean),digits=4)
 #tapply(Runtime,MatrixOperation,mean)
 
-group_by(df, Processor) %>%
-  summarise(
-    count = n(),
-    mean = mean(Runtime, na.rm = TRUE),
-    sd = sd(Runtime, na.rm = TRUE)
-  )
-
-group_by(df, MatrixOperation) %>%
-  summarise(
-    count = n(),
-    mean = mean(Runtime, na.rm = TRUE),
-    sd = sd(Runtime, na.rm = TRUE)
-  )
+# group_by(df, Processor) %>%
+#   summarise(
+#     count = n(),
+#     mean = mean(Runtime, na.rm = TRUE),
+#     sd = sd(Runtime, na.rm = TRUE)
+#   )
+# 
+# group_by(df, MatrixOperation) %>%
+#   summarise(
+#     count = n(),
+#     mean = mean(Runtime, na.rm = TRUE),
+#     sd = sd(Runtime, na.rm = TRUE)
+#   )
 
 detach(df)
 
@@ -501,14 +501,15 @@ size320data <- df %>% filter(MatrixSize==320)
 size640data <- df %>% filter(MatrixSize==640)
 size1280data <- df %>% filter(MatrixSize==1280)
 
-
-boxplot(Runtime~Processor*MatrixOperation, data = size320data, main="At the level of matrix size=320")
+```
+### Mean of Runtime
+```{r}
+#boxplot(Runtime~Processor*MatrixOperation, data = size320data, main="At the level of matrix size=320")
 tapply(size320data$Runtime,list(size320data$Processor, size320data$MatrixOperation),mean)
-boxplot(Runtime~Processor*MatrixOperation, data = size640data, main="At the level of matrix size=640")
+#boxplot(Runtime~Processor*MatrixOperation, data = size640data, main="At the level of matrix size=640")
 tapply(size640data$Runtime,list(size640data$Processor, size640data$MatrixOperation),mean)
-boxplot(Runtime~Processor*MatrixOperation, data = size1280data, main="At the level of matrix size=1280")
+#boxplot(Runtime~Processor*MatrixOperation, data = size1280data, main="At the level of matrix size=1280")
 tapply(size1280data$Runtime,list(size1280data$Processor, size1280data$MatrixOperation),mean)
-
 
 ```
 
@@ -523,15 +524,15 @@ summary(fit1)
 anova(fit2, fit1)
 
 mod320<-aov(log10(Runtime)~Processor*MatrixOperation, data = size320data)
-#summary(mod320)
+#anova(mod320)
 Anova(mod320,type="III")
 
-modF<-lm(log10(Runtime)~Processor+MatrixOperation, data = size320data)
-modA<-lm(log10(Runtime)~Processor, data = size320data)
-modB<-lm(log10(Runtime)~MatrixOperation, data = size320data)
+modF320<-lm(log10(Runtime)~Processor+MatrixOperation, data = size320data)
+modA320<-lm(log10(Runtime)~Processor, data = size320data)
+modB320<-lm(log10(Runtime)~MatrixOperation, data = size320data)
 
-anova(modA, modF)
-anova(modB, modF)
+anova(modA320, modF320)
+anova(modB320, modF320)
 ```
 
 ```{r}
@@ -546,12 +547,12 @@ mod640<-aov(Runtime~Processor*MatrixOperation, data = size640data)
 Anova(mod640,type="III")
 
 
-modF<-lm(Runtime~Processor+MatrixOperation, data = size640data)
-modA<-lm(Runtime~Processor, data = size640data)
-modB<-lm(Runtime~MatrixOperation, data = size640data)
+modF640<-lm(Runtime~Processor+MatrixOperation, data = size640data)
+modA640<-lm(Runtime~Processor, data = size640data)
+modB640<-lm(Runtime~MatrixOperation, data = size640data)
 
-anova(modA, modF)
-anova(modB, modF)
+anova(modA640, modF640)
+anova(modB640, modF640)
 
 ##################### 1280
 fit2_1280<-lm(Runtime~Processor+MatrixOperation, data = size1280data)
@@ -560,25 +561,19 @@ fit1_1280<-lm(Runtime~Processor*MatrixOperation, data = size1280data)
 summary(fit1_1280)
 anova(fit2_1280, fit1_1280)
 
-modF<-lm(Runtime~Processor+MatrixOperation, data = size1280data)
-modA<-lm(Runtime~Processor, data = size1280data)
-modB<-lm(Runtime~MatrixOperation, data = size1280data)
+modF1280<-lm(Runtime~Processor+MatrixOperation, data = size1280data)
+modA1280<-lm(Runtime~Processor, data = size1280data)
+modB1280<-lm(Runtime~MatrixOperation, data = size1280data)
 
-anova(modA, modF)
-anova(modB, modF)
+anova(modA1280, modF1280)
+anova(modB1280, modF1280)
 
 mod1280<-aov(Runtime~Processor*MatrixOperation, data = size1280data)
 Anova(mod1280,type="III")
 
 ```
 
-### Mean of Runtime
-```{r}
-tapply(Runtime,list(Processor, MatrixOperation),mean, data = size320data)
-tapply(Runtime,list(Processor, MatrixOperation),mean, data = size640data)
-tapply(Runtime,list(Processor, MatrixOperation),mean, data = size1280data)
 
-```
 
 # Zhanhao Zhang Part II
 ## General Visualization
