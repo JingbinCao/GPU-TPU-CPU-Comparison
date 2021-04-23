@@ -431,6 +431,7 @@ abline(h=0, col="red")
 
 # Lixian Chen Part I
 When the processor is the same, is there any operation and matrix size effect? We want to answer the following question: in each scenario, which processor should we use?
+When the matrix size is the same, is there any processor or operation type effect, or interaction? 
 
 ## Getting Data Ready
 ```{r, prepare data, message=FALSE, warning=FALSE}
@@ -441,17 +442,36 @@ df <- fread("../data/Runtime.csv", header=TRUE)
 MatrixOperation<-factor(df$MatrixOperation)
 Processor<-factor(df$Processor)
 
+summary(Runtime)
+summary(Processor)
+summary(MatrixOperation)
+summary(MatrixSize)
+
+op=par(mfrow=c(1,1))
+#op=par(mfrow=c(2,1))
+interaction.plot(df$MatrixSize, df$MatrixOperation, df$Runtime, ylab = "Runtime (seconds)",
+                 xlab = "Matrix Size", trace.label = "Matrix Operation", col = c("blue4", "red4", "green4"))
+interaction.plot(df$MatrixSize, df$MatrixOperation, log(df$Runtime), ylab = "Runtime (seconds)",
+                 xlab = "Matrix Size", trace.label = "Matrix Operation", col = c("blue4", "red4", "green4"))
+par(op)
 
 
 CPUdata <- df %>% dplyr::filter(Processor=="CPU")
 GPUdata <- df %>% dplyr::filter(Processor=="GPU")
 TPUdata <- df %>% dplyr::filter(Processor=="TPU")
 
+summary(CPUdata$Runtime)
+summary(GPUdata$Runtime)
+summary(TPUdata$Runtime)
 
-
-describeBy(df$Runtime,group = df$MatrixSize, mat = TRUE) %>%  #create dataframe
-  select(MatrixSize=group1, N=n, Mean=mean, SD=sd, Median=median, Min=min, Max=max, 
-         Skew=skew, Kurtosis=kurtosis, SEM=se)
+op=par(mfrow=c(1,3))
+interaction.plot(CPUdata$MatrixSize, CPUdata$MatrixOperation, CPUdata$Runtime, ylab = "CPU Runtime (seconds)",
+                 xlab = "Matrix Size", trace.label = "Matrix Operation", col = c("blue4", "red4", "green4"))
+interaction.plot(GPUdata$MatrixSize, GPUdata$MatrixOperation, GPUdata$Runtime, ylab = "GPU Runtime (seconds)",
+                 xlab = "Matrix Size", trace.label = "Matrix Operation", col = c("blue4", "red4", "green4"))
+interaction.plot(TPUdata$MatrixSize, TPUdata$MatrixOperation, TPUdata$Runtime, ylab = "TPU Runtime (seconds)",
+                 xlab = "Matrix Size", trace.label = "Matrix Operation", col = c("blue4", "red4", "green4"))
+par(op)
 
 #boxplot(Runtime~Processor*MatrixOperation)
 #tapply(Runtime,list(Processor, MatrixOperation),mean)
@@ -471,12 +491,10 @@ group_by(df, MatrixOperation) %>%
     sd = sd(Runtime, na.rm = TRUE)
   )
 
-#detach(data) 
-
 size320data <- df %>% filter(MatrixSize==320)
 size640data <- df %>% filter(MatrixSize==640)
 size1280data <- df %>% filter(MatrixSize==1280)
-size2560data <- df %>% filter(MatrixSize==2560)
+
 ```
 
 ## Analysis
@@ -537,22 +555,6 @@ anova(modB, modF)
 mod1280<-aov(Runtime~Processor*MatrixOperation, data = size1280data)
 Anova(mod1280,type="III")
 
-################## 2560
-fit2_2560<-lm(Runtime~Processor+MatrixOperation, data = size2560data)
-summary(fit2)
-fit1_2560<-lm(Runtime~Processor*MatrixOperation, data = size2560data)
-summary(fit1_2560)
-anova(fit2_2560, fit1_2560)
-
-mod2560<-aov(Runtime~Processor*MatrixOperation, data = size2560data)
-Anova(mod2560,type="III")
-
-modF<-lm(Runtime~Processor+MatrixOperation, data = size2560data)
-modA<-lm(Runtime~Processor, data = size2560data)
-modB<-lm(Runtime~MatrixOperation, data = size2560data)
-
-anova(modA, modF)
-anova(modB, modF)
 ```
 
 ### Mean of Runtime
@@ -560,7 +562,7 @@ anova(modB, modF)
 tapply(Runtime,list(Processor, MatrixOperation),mean, data = size320data)
 tapply(Runtime,list(Processor, MatrixOperation),mean, data = size640data)
 tapply(Runtime,list(Processor, MatrixOperation),mean, data = size1280data)
-tapply(Runtime,list(Processor, MatrixOperation),mean, data = size2560data)
+
 ```
 
 # Zhanhao Zhang Part II
