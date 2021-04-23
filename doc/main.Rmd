@@ -497,9 +497,9 @@ round(tapply(Runtime,list(Processor, MatrixOperation),mean),digits=4)
 
 detach(df)
 
-size320data <- df %>% filter(MatrixSize==320)
-size640data <- df %>% filter(MatrixSize==640)
-size1280data <- df %>% filter(MatrixSize==1280)
+size320data <- df %>% dplyr::filter(MatrixSize==320)
+size640data <- df %>% dplyr::filter(MatrixSize==640)
+size1280data <- df %>% dplyr::filter(MatrixSize==1280)
 
 ```
 ### Mean of Runtime
@@ -576,17 +576,17 @@ Anova(mod1280,type="III")
 
 ```{r}
 #also fix processor, 1 way ANOVA
-size320CPUdata <- data %>% filter(MatrixSize==320 & Processor=="CPU")
-size640CPUdata <- data %>% filter(MatrixSize==640 & Processor=="CPU")
-size1280CPUdata <- data %>% filter(MatrixSize==1280 & Processor=="CPU")
+size320CPUdata <- data %>% dplyr::filter(MatrixSize==320 & Processor=="CPU")
+size640CPUdata <- data %>% dplyr::filter(MatrixSize==640 & Processor=="CPU")
+size1280CPUdata <- data %>% dplyr::filter(MatrixSize==1280 & Processor=="CPU")
 
-size320GPUdata <- data %>% filter(MatrixSize==320 & Processor=="GPU")
-size640GPUdata <- data %>% filter(MatrixSize==640 & Processor=="GPU")
+size320GPUdata <- data %>% dplyr::filter(MatrixSize==320 & Processor=="GPU")
+size640GPUdata <- data %>% dplyr::filter(MatrixSize==640 & Processor=="GPU")
 size1280GPUdata <- data %>% filter(MatrixSize==1280 & Processor=="GPU")
 
-size320TPUdata <- data %>% filter(MatrixSize==320 & Processor=="TPU")
-size640TPUdata <- data %>% filter(MatrixSize==640 & Processor=="TPU")
-size1280TPUdata <- data %>% filter(MatrixSize==1280 & Processor=="TPU")
+size320TPUdata <- data %>% dplyr::filter(MatrixSize==320 & Processor=="TPU")
+size640TPUdata <- data %>% dplyr::filter(MatrixSize==640 & Processor=="TPU")
+size1280TPUdata <- data %>% dplyr::filter(MatrixSize==1280 & Processor=="TPU")
 
 mod320CPU<-lm(Runtime~MatrixOperation, data = size320CPUdata)
 summary(mod320CPU)
@@ -640,8 +640,11 @@ abline(0,0)
 #boxcox transform
 boxCox(mod2N, family="yjPower", plotit = TRUE)
 lambda=-1
-depvar.transformed <- yjPower(Runtime, lambda)
-mod2NT<-lm(depvar.transformed~Processor+MatrixOperation+MatrixSize, df = df)
+depvar.transformed <- yjPower(data$Runtime, lambda)
+Processor <- data$Processor
+MatrixOperation <- data$MatrixOperation
+MatrixSize <- data$MatrixSize
+mod2NT<-lm(depvar.transformed~Processor+MatrixOperation+MatrixSize)
 summary(mod2NT)
 res <- resid(mod2NT)
 plot(fitted(mod2NT), res)
@@ -817,14 +820,6 @@ while (!is.null(dev.list()))  dev.off()
 knitr::include_graphics("../figs/Operation_vs_runtime_size1280.jpeg")
 ```
 
-```{r}
-jpeg(filename = "../figs/Operation_vs_runtime_size2560.jpeg", width = 1400, height = 400,quality = 10000)
-boxplot(Runtime~Processor*MatrixOperation, data = size2560data, main="At the level of matrix size=2560")
-while (!is.null(dev.list()))  dev.off()
-```
-```{r out.width = "90%", fig.align = "center", echo=FALSE}
-knitr::include_graphics("../figs/Operation_vs_runtime_size2560.jpeg")
-```
 # Jingbin Cao Part II
 
 ## Plot Anova Residuals
