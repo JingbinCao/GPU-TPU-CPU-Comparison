@@ -115,11 +115,11 @@ round(digits=4,confint(lm_gpu_inv))
 #ggplot(data = data, aes(x = Processor, y = log10(Runtime))) +
  # geom_boxplot(aes(fill = MatrixOperation))
 for(operation in unique(data$MatrixOperation)){
-  png(paste0("../figs/", operation, ".png"), width = 500, height = 500)
+  #png(paste0("../figs/", operation, ".png"), width = 500, height = 500)
   p <- data %>%
-    dplyr::filter(MatrixOperation == operation, MatrixSize <= 2560) %>%
+    filter(MatrixOperation == operation, MatrixSize <= 2560) %>%
     group_by(MatrixSize, MatrixOperation, Processor) %>%
-    dplyr::summarize(Runtime = mean(Runtime)) %>%
+    summarize(Runtime = mean(Runtime)) %>%
     ggplot(aes(x = Processor, y = Runtime)) +
     #geom_boxplot(aes(fill = as.factor(MatrixSize))) +
     geom_bar(aes(fill = as.factor(MatrixSize)), stat = "identity",
@@ -129,7 +129,7 @@ for(operation in unique(data$MatrixOperation)){
     #facet_wrap( ~ MatrixOperation, scales = "free", nrow = 1) +
     guides(fill=guide_legend(title = "Matrix Size"))
   print(p)
-  dev.off()
+ # dev.off()
 }
 ```
 
