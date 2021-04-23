@@ -500,14 +500,16 @@ size640data <- df %>% dplyr::filter(MatrixSize==640)
 size1280data <- df %>% dplyr::filter(MatrixSize==1280)
 
 ```
-### Mean of Runtime
+### Mean of Runtime and Boxplot
 ```{r}
-#boxplot(Runtime~Processor*MatrixOperation, data = size320data, main="At the level of matrix size=320")
+
 tapply(size320data$Runtime,list(size320data$Processor, size320data$MatrixOperation),mean)
-#boxplot(Runtime~Processor*MatrixOperation, data = size640data, main="At the level of matrix size=640")
 tapply(size640data$Runtime,list(size640data$Processor, size640data$MatrixOperation),mean)
-#boxplot(Runtime~Processor*MatrixOperation, data = size1280data, main="At the level of matrix size=1280")
 tapply(size1280data$Runtime,list(size1280data$Processor, size1280data$MatrixOperation),mean)
+
+boxplot(Runtime~Processor*MatrixOperation, data = size320data, main="At the level of matrix size=320")
+boxplot(Runtime~Processor*MatrixOperation, data = size640data, main="At the level of matrix size=640")
+boxplot(Runtime~Processor*MatrixOperation, data = size1280data, main="At the level of matrix size=1280")
 
 ```
 
