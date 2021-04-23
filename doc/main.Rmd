@@ -119,7 +119,7 @@ for(operation in unique(data$MatrixOperation)){
   p <- data %>%
     dplyr::filter(MatrixOperation == operation) %>%
     group_by(MatrixSize, MatrixOperation, Processor) %>%
-    dplyr::summarize(Runtime = mean(Runtime)) %>%
+    summarize(Runtime = mean(Runtime)) %>%
     ggplot(aes(x = Processor, y = Runtime)) +
     #geom_boxplot(aes(fill = as.factor(MatrixSize))) +
     geom_bar(aes(fill = as.factor(MatrixSize)), stat = "identity",
