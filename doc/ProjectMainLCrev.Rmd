@@ -287,6 +287,25 @@ res <- resid(mod2NI)
 plot(fitted(mod2NI), res)
 abline(0,0)
 
+#GLM with log link 
+glm.mod <- glm(Runtime~Processor+MatrixOperation+MatrixSize, family=gaussian(link="log"))
+glm.mod
+summary(glm.mod)
+res <- resid(glm.mod)
+plot(fitted(glm.mod), res)
+abline(0,0)
+
+#boxcox transform
+boxCox(mod2N, family="yjPower", plotit = TRUE)
+lambda=-1
+lambda=-2
+depvar.transformed <- yjPower(Runtime, lambda)
+mod2NT<-lm(depvar.transformed~Processor+MatrixOperation+MatrixSize, data = data)
+summary(mod2NT)
+res <- resid(mod2NT)
+plot(fitted(mod2NT), res)
+abline(0,0)
+
 ```
 
 ### Mean of Runtime

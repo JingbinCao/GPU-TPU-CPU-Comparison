@@ -65,37 +65,230 @@ knitr::include_graphics("../figs/overview.jpeg")
 # Jingbin Cao Part I
 Research different Matrix Sizes
 One Way Anova for different matrix sized for each pair of processor and matrix operation:
-$\mu_1 = Matrix_{Size}=320$
-$\mu_2 = Matrix_{Size}=640$
-$\mu_3 = Matrix_{Size}=1280$
-$\mu_4 = Matrix_{Size}=2160$
+$\mu_1 = Matrix_{Size}=160$
+$\mu_2 = Matrix_{Size}=320$
+$\mu_3 = Matrix_{Size}=640$
+$\mu_4 = Matrix_{Size}=1280$
 
 ## Getting Data
 ```{r}
-cpu_add <- data[data$Processor == "CPU" & data$MatrixOperation=="Addition" & data$MatrixSize >= 320,]
-cpu_mult <- data[data$Processor == "CPU" & data$MatrixOperation=="Multiplication" & data$MatrixSize >= 320,]
-cpu_inv <- data[data$Processor == "CPU" & data$MatrixOperation=="Invertion" & data$MatrixSize >= 320,]
-gpu_add <- data[data$Processor == "GPU" & data$MatrixOperation=="Addition" & data$MatrixSize >= 320,]
-gpu_mult <- data[data$Processor == "GPU" & data$MatrixOperation=="Multiplication" & data$MatrixSize >= 320,]
-gpu_inv <- data[data$Processor == "GPU" & data$MatrixOperation=="Invertion" & data$MatrixSize >= 320,]
-tpu_add <- data[data$Processor == "TPU" & data$MatrixOperation=="Addition" & data$MatrixSize >= 320,]
-tpu_mult <- data[data$Processor == "TPU" & data$MatrixOperation=="Multiplication" & data$MatrixSize >= 320,]
-tpu_inv <- data[data$Processor == "TPU" & data$MatrixOperation=="Invertion" & data$MatrixSize >= 320,]
+cpu_add <- data[data$Processor == "CPU" & data$MatrixOperation=="Addition" & data$MatrixSize >= 160,]
+cpu_mult <- data[data$Processor == "CPU" & data$MatrixOperation=="Multiplication" & data$MatrixSize >= 160,]
+cpu_inv <- data[data$Processor == "CPU" & data$MatrixOperation=="Inversion" & data$MatrixSize >= 160,]
+gpu_add <- data[data$Processor == "GPU" & data$MatrixOperation=="Addition" & data$MatrixSize >= 160,]
+gpu_mult <- data[data$Processor == "GPU" & data$MatrixOperation=="Multiplication" & data$MatrixSize >= 160,]
+gpu_inv <- data[data$Processor == "GPU" & data$MatrixOperation=="Inversion" & data$MatrixSize >= 160,]
+tpu_add <- data[data$Processor == "TPU" & data$MatrixOperation=="Addition" & data$MatrixSize >= 160,]
+tpu_mult <- data[data$Processor == "TPU" & data$MatrixOperation=="Multiplication" & data$MatrixSize >= 160,]
+tpu_inv <- data[data$Processor == "TPU" & data$MatrixOperation=="Inversion" & data$MatrixSize >= 160,]
 ```
 ## Anovas
 ```{r}
-summary(aov(Runtime ~ as.factor(MatrixSize), data=cpu_add))
-summary(aov(Runtime ~ as.factor(MatrixSize), data=cpu_mult))
-summary(aov(Runtime ~ as.factor(MatrixSize), data=cpu_inv))
-summary(aov(Runtime ~ as.factor(MatrixSize), data=gpu_add))
-summary(aov(Runtime ~ as.factor(MatrixSize), data=gpu_mult))
-summary(aov(Runtime ~ as.factor(MatrixSize), data=gpu_inv))
-summary(aov(Runtime ~ as.factor(MatrixSize), data=tpu_add))
-summary(aov(Runtime ~ as.factor(MatrixSize), data=tpu_mult))
-summary(aov(Runtime ~ as.factor(MatrixSize), data=tpu_inv))
+summary(mod_cpu_add <- aov(log10(Runtime) ~ as.factor(MatrixSize), data=cpu_add))
+summary(mod_cpu_mult <- aov(log10(Runtime) ~ as.factor(MatrixSize), data=cpu_mult))
+summary(mod_cpu_inv <- aov(log10(Runtime) ~ as.factor(MatrixSize), data=cpu_inv))
+summary(mod_gpu_add <- aov(log10(Runtime) ~ as.factor(MatrixSize), data=gpu_add))
+summary(mod_gpu_mult <- aov(log10(Runtime) ~ as.factor(MatrixSize), data=gpu_mult))
+summary(mod_gpu_inv <- aov(log10(Runtime) ~ as.factor(MatrixSize), data=gpu_inv))
+summary(mod_tpu_add <- aov(log10(Runtime) ~ as.factor(MatrixSize), data=tpu_add))
+summary(mod_tpu_mult <- aov(log10(Runtime) ~ as.factor(MatrixSize), data=tpu_mult))
+summary(mod_tpu_inv <- aov(log10(Runtime) ~ as.factor(MatrixSize), data=tpu_inv))
+
+# From the tables, we can see that only TPU & Multiplication and TPU & Inversion do not have Matrix Size effect, but other nine pairs do have Matrix Size effects.
+# plot(aov(Runtime ~ as.factor(MatrixSize), data=tpu_mult))
+# plot(aov(Runtime ~ as.factor(MatrixSize), data=tpu_inv))
+```
+## Plot Anova Residuals
+### CPU Add
+```{r}
+jpeg(filename = "../figs/res_cpu_add.jpeg", width = 600, height = 400,quality = 10000)
+m <- max(abs(mod_cpu_add$residuals))
+plot(mod_cpu_add$fitted.values,mod_cpu_add$residuals, ylim=c(-m, m), main = "Residual Plot for CPU and Addition", xlab = "Fitted Values", ylab = "Residuals")
+abline(h=0, col="red")
+while (!is.null(dev.list()))  dev.off()
+knitr::include_graphics("../figs/res_cpu_add.jpeg")
+```
+### CPU Multiplication
+```{r}
+jpeg(filename = "../figs/res_cpu_mult.jpeg", width = 600, height = 400,quality = 10000)
+m <- max(abs(mod_cpu_mult$residuals))
+plot(mod_cpu_mult$fitted.values ,mod_cpu_mult$residuals, ylim=c(-m, m), main = "Residual Plot for CPU and Multiplication", xlab = "Fitted Values", ylab = "Residuals")
+abline(h=0, col="red")
+while (!is.null(dev.list()))  dev.off()
+knitr::include_graphics("../figs/res_cpu_mult.jpeg")
+```
+### CPU Inversion
+```{r}
+jpeg(filename = "../figs/res_cpu_inv.jpeg", width = 600, height = 400,quality = 10000)
+m <- max(abs(mod_cpu_inv$residuals))
+plot(mod_cpu_inv$fitted.values,mod_cpu_inv$residuals, ylim=c(-m, m), main = "Residual Plot for CPU and Inversion", xlab = "Fitted Values", ylab = "Residuals")
+abline(h=0, col="red")
+while (!is.null(dev.list()))  dev.off()
+knitr::include_graphics("../figs/res_cpu_inv.jpeg")
+```
+
+### GPU Add
+```{r}
+jpeg(filename = "../figs/res_gpu_add.jpeg", width = 600, height = 400,quality = 10000)
+m <- max(abs(mod_gpu_add$residuals))
+plot(mod_gpu_add$fitted.values,mod_gpu_add$residuals, ylim=c(-m, m), main = "Residual Plot for GPU and Addition", xlab = "Fitted Values", ylab = "Residuals")
+abline(h=0, col="red")
+while (!is.null(dev.list()))  dev.off()
+knitr::include_graphics("../figs/res_gpu_add.jpeg")
+```
+### GPU Multiplication
+```{r}
+jpeg(filename = "../figs/res_gpu_mult.jpeg", width = 600, height = 400,quality = 10000)
+m <- max(abs(mod_gpu_mult$residuals))
+plot(mod_gpu_mult$fitted.values ,mod_gpu_mult$residuals, ylim=c(-m, m), main = "Residual Plot for GPU and Multiplication", xlab = "Fitted Values", ylab = "Residuals")
+abline(h=0, col="red")
+while (!is.null(dev.list()))  dev.off()
+knitr::include_graphics("../figs/res_gpu_mult.jpeg")
+```
+### GPU Inversion
+```{r}
+jpeg(filename = "../figs/res_gpu_inv.jpeg", width = 600, height = 400,quality = 10000)
+m <- max(abs(mod_gpu_inv$residuals))
+plot(mod_gpu_inv$fitted.values, mod_gpu_inv$residuals, ylim=c(-m, m), main = "Residual Plot for GPU and Inversion", xlab = "Fitted Values", ylab = "Residuals")
+abline(h=0, col="red")
+while (!is.null(dev.list()))  dev.off()
+knitr::include_graphics("../figs/res_gpu_inv.jpeg")
+```
+
+### TPU Add
+```{r}
+jpeg(filename = "../figs/res_tpu_add.jpeg", width = 600, height = 400,quality = 10000)
+m <- max(abs(mod_tpu_add$residuals))
+plot(mod_tpu_add$fitted.values, mod_tpu_add$residuals, ylim=c(-m, m), main = "Residual Plot for TPU and Addition", xlab = "Fitted Values", ylab = "Residuals")
+abline(h=0, col="red")
+while (!is.null(dev.list()))  dev.off()
+knitr::include_graphics("../figs/res_tpu_add.jpeg")
+```
+### TPU Multiplication
+```{r}
+jpeg(filename = "../figs/res_tpu_mult.jpeg", width = 600, height = 400,quality = 10000)
+m <- max(abs(mod_tpu_mult$residuals))
+plot(mod_tpu_mult$fitted.values, mod_tpu_mult$residuals, ylim=c(-m, m), main = "Residual Plot for TPU and Multiplication", xlab = "Fitted Values", ylab = "Residuals")
+abline(h=0, col="red")
+while (!is.null(dev.list()))  dev.off()
+knitr::include_graphics("../figs/res_tpu_mult.jpeg")
+```
+### TPU Inversion
+```{r}
+jpeg(filename = "../figs/res_tpu_inv.jpeg", width = 600, height = 400,quality = 10000)
+m <- max(abs(mod_tpu_inv$residuals))
+plot(mod_tpu_inv$fitted.values, mod_tpu_inv$residuals, ylim=c(-m, m), main = "Residual Plot for TPU and Inversion", xlab = "Fitted Values", ylab = "Residuals")
+abline(h=0, col="red")
+while (!is.null(dev.list()))  dev.off()
+knitr::include_graphics("../figs/res_tpu_inv.jpeg")
+```
+## Linear Regression for Matrix Size as continuous
+We just need to run linear regression on seven pairs that do have Matrix Size Effects
+```{r}
+summary(lm_cpu_add <- lm(log10(Runtime)~as.numeric(MatrixSize),data=data[data$Processor == "CPU" & data$MatrixOperation=="Addition",]))
+summary(lm_cpu_mult <- lm(log10(Runtime)~as.numeric(MatrixSize),data[data$Processor == "CPU" & data$MatrixOperation=="Multiplication",]))
+summary(lm_cpu_inv <- lm(log10(Runtime)~as.numeric(MatrixSize),data[data$Processor == "CPU" & data$MatrixOperation=="Inversion",]))
+summary(lm_gpu_add <- lm(log10(Runtime)~as.numeric(MatrixSize),data=data[data$Processor == "GPU" & data$MatrixOperation=="Addition",]))
+summary(lm_gpu_mult <- lm(log10(Runtime)~as.numeric(MatrixSize),data[data$Processor == "GPU" & data$MatrixOperation=="Multiplication",]))
+summary(lm_gpu_inv <- lm(log10(Runtime)~as.numeric(MatrixSize),data[data$Processor == "GPU" & data$MatrixOperation=="Inversion",]))
+```
+### Confidence Interval for LMs
+```{r}
+round(digits=4,confint(lm_cpu_add))
+round(digits=4,confint(lm_cpu_mult))
+round(digits=4,confint(lm_cpu_inv))
+round(confint(lm_gpu_add),4)
+round(digits=4,confint(lm_gpu_mult))
+round(digits=4,confint(lm_gpu_inv))
 ```
 
 
+## Plot LM
+### CPU Addition
+```{r}
+jpeg(filename = "../figs/res_lm_cpu_add.jpeg", width = 600, height = 400,quality = 10000)
+m <- max(abs(lm_cpu_add$residuals))
+plot(lm_cpu_add$fitted.values, lm_cpu_add$residuals, ylim=c(-m, m), main = "Residual Plot for CPU and Addition", xlab = "Fitted Values", ylab = "Residuals")
+abline(h=0, col="red")
+while (!is.null(dev.list()))  dev.off()
+knitr::include_graphics("../figs/res_lm_cpu_add.jpeg")
+```
+### CPU Multiplication
+```{r}
+jpeg(filename = "../figs/res_lm_cpu_mult.jpeg", width = 600, height = 400,quality = 10000)
+m <- max(abs(lm_cpu_mult$residuals))
+plot(lm_cpu_mult$fitted.values, lm_cpu_mult$residuals, ylim=c(-m, m), main = "Residual Plot for CPU and Multiplicatoin", xlab = "Fitted Values", ylab = "Residuals")
+abline(h=0, col="red")
+while (!is.null(dev.list()))  dev.off()
+knitr::include_graphics("../figs/res_lm_cpu_mult.jpeg")
+```
+
+### CPU Inversion
+```{r}
+jpeg(filename = "../figs/res_lm_cpu_inv.jpeg", width = 600, height = 400,quality = 10000)
+m <- max(abs(lm_cpu_inv$residuals))
+plot(lm_cpu_inv$fitted.values, lm_cpu_inv$residuals, ylim=c(-m, m), main = "Residual Plot for CPU and Inversion", xlab = "Fitted Values", ylab = "Residuals")
+abline(h=0, col="red")
+while (!is.null(dev.list()))  dev.off()
+knitr::include_graphics("../figs/res_lm_cpu_inv.jpeg")
+```
+
+### GPU Addition
+```{r}
+jpeg(filename = "../figs/res_lm_gpu_add.jpeg", width = 600, height = 400,quality = 10000)
+m <- max(abs(lm_gpu_add$residuals))
+plot(lm_gpu_add$fitted.values, lm_gpu_add$residuals, ylim=c(-m, m), main = "Residual Plot for GPU and Addition", xlab = "Fitted Values", ylab = "Residuals")
+abline(h=0, col="red")
+while (!is.null(dev.list()))  dev.off()
+knitr::include_graphics("../figs/res_lm_gpu_add.jpeg")
+```
+### GPU Multiplication
+```{r}
+jpeg(filename = "../figs/res_lm_gpu_mult.jpeg", width = 600, height = 400,quality = 10000)
+m <- max(abs(lm_gpu_mult$residuals))
+plot(lm_gpu_mult$fitted.values, lm_gpu_mult$residuals, ylim=c(-m, m), main = "Residual Plot for GPU and Multiplicatoin", xlab = "Fitted Values", ylab = "Residuals")
+abline(h=0, col="red")
+while (!is.null(dev.list()))  dev.off()
+knitr::include_graphics("../figs/res_lm_gpu_mult.jpeg")
+```
+
+### GPU Inversion
+```{r}
+jpeg(filename = "../figs/res_lm_gpu_inv.jpeg", width = 600, height = 400,quality = 10000)
+m <- max(abs(lm_gpu_inv$residuals))
+plot(lm_gpu_inv$fitted.values, lm_gpu_inv$residuals, ylim=c(-m, m), main = "Residual Plot for GPU and Inversion", xlab = "Fitted Values", ylab = "Residuals")
+abline(h=0, col="red")
+while (!is.null(dev.list()))  dev.off()
+knitr::include_graphics("../figs/res_lm_gpu_inv.jpeg")
+```
+
+###
+```{r}
+plot(lm(log10(Runtime)~as.numeric(MatrixSize),data=data[data$Processor == "CPU" & data$MatrixOperation=="Addition",]), which=1, col=c("blue"))
+plot(lm(log10(Runtime)~as.numeric(MatrixSize),data[data$Processor == "CPU" & data$MatrixOperation=="Multiplication",]), which=1, col=c("blue"))
+plot(lm(log10(Runtime)~as.numeric(MatrixSize),data = data[data$Processor == "CPU" & data$MatrixOperation=="Inversion",]), which=1, col=c("blue"))
+plot(lm(log10(Runtime)~as.numeric(MatrixSize),data=data[data$Processor == "GPU" & data$MatrixOperation=="Addition",]), which=1, col=c("blue"), main = "Linear Regression of Different Matrix Sizes for GPU & Addition")
+plot(lm(log10(Runtime)~as.numeric(MatrixSize),data[data$Processor == "GPU" & data$MatrixOperation=="Multiplication",]), which=1, col=c("blue"))
+plot(lm(log10(Runtime)~as.numeric(MatrixSize),data[data$Processor == "GPU" & data$MatrixOperation=="Inversion",]), which=1, col=c("blue"))
+plot(lm(log10(Runtime)~as.numeric(MatrixSize),data=data[data$Processor == "TPU" & data$MatrixOperation=="Addition",]), which=1, col=c("blue"), main = "Linear Regression of Different Matrix Sizes for TPU & Addition")
+```
+```{r}
+jpeg(filename = "../figs/LM_GPU_Addition.jpeg", width = 600, height = 400,quality = 10000)
+plot(lm(Runtime~as.numeric(MatrixSize),data=data[data$Processor == "GPU" & data$MatrixOperation=="Addition",]), which=1, col=c("blue"), main = "Linear Regression of Different Matrix Sizes for GPU & Addition")
+while (!is.null(dev.list()))  dev.off()
+```
+```{r out.width = "90%", fig.align = "center", echo=FALSE}
+knitr::include_graphics("../figs/LM_GPU_Addition.jpeg")
+```
+
+```{r}
+jpeg(filename = "../figs/LM_TPU_Addition.jpeg", width = 600, height = 400,quality = 10000)
+plot(lm(Runtime~as.numeric(MatrixSize),data=data[data$Processor == "TPU" & data$MatrixOperation=="Addition",]), which=1, col=c("blue"), main = "Linear Regression of Different Matrix Sizes for TPU & Addition")
+while (!is.null(dev.list()))  dev.off()
+```
+```{r out.width = "90%", fig.align = "center", echo=FALSE}
+knitr::include_graphics("../figs/LM_TPU_Addition.jpeg")
+```
 
 # Zhanhao Zhang Part I  
 ## Pros & Cons of Each Processor  
@@ -431,6 +624,7 @@ while (!is.null(dev.list()))  dev.off()
 ```{r out.width = "90%", fig.align = "center", echo=FALSE}
 knitr::include_graphics("../figs/Operation_vs_runtime_size2560.jpeg")
 ```
+# Jingbin Cao Part II
 At the level of matrix size=2560, avoid using CPU for inversion and multiplication because its run-times are much bigger.
 
 ```{r, message=FALSE, warning=FALSE, echo=FALSE}
