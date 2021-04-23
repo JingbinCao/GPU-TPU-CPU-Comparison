@@ -101,12 +101,12 @@ summary(mod_tpu_inv <- aov(log10(Runtime) ~ as.factor(MatrixSize), data=tpu_inv)
 
 ### Confidence Interval for LMs
 ```{r}
-round(digits=4,confint(lm_cpu_add))
-round(digits=4,confint(lm_cpu_mult))
-round(digits=4,confint(lm_cpu_inv))
-round(confint(lm_gpu_add),4)
-round(digits=4,confint(lm_gpu_mult))
-round(digits=4,confint(lm_gpu_inv))
+round(digits=4,confint(mod_cpu_add))
+round(digits=4,confint(mod_cpu_mult))
+round(digits=4,confint(mod_cpu_inv))
+round(confint(mod_gpu_add),4)
+round(digits=4,confint(mod_gpu_mult))
+round(digits=4,confint(mod_gpu_inv))
 ```
 
 # Zhanhao Zhang Part I  
@@ -115,9 +115,9 @@ round(digits=4,confint(lm_gpu_inv))
 #ggplot(data = data, aes(x = Processor, y = log10(Runtime))) +
  # geom_boxplot(aes(fill = MatrixOperation))
 for(operation in unique(data$MatrixOperation)){
-  png(paste0("../figs/", operation, ".png"), width = 500, height = 500)
+  #png(paste0("../figs/", operation, ".png"), width = 500, height = 500)
   p <- data %>%
-    dplyr::filter(MatrixOperation == operation, MatrixSize <= 2560) %>%
+    dplyr::filter(MatrixOperation == operation) %>%
     group_by(MatrixSize, MatrixOperation, Processor) %>%
     dplyr::summarize(Runtime = mean(Runtime)) %>%
     ggplot(aes(x = Processor, y = Runtime)) +
@@ -129,7 +129,7 @@ for(operation in unique(data$MatrixOperation)){
     #facet_wrap( ~ MatrixOperation, scales = "free", nrow = 1) +
     guides(fill=guide_legend(title = "Matrix Size"))
   print(p)
-  dev.off()
+  #dev.off()
 }
 ```
 
@@ -168,10 +168,11 @@ for(size in unique(data$MatrixSize)){
   print(p)
 }
 ```
+
 ```{r}
 for(operation in unique(data$MatrixOperation)){
   p <- data %>%
-    dplyr::filter(MatrixOperation == operation, MatrixSize <= 2560) %>%
+    dplyr::filter(MatrixOperation == operation) %>%
     group_by(MatrixSize, MatrixOperation, Processor) %>%
     summarize(Runtime = mean(Runtime)) %>%
     ggplot(aes(x = as.factor(MatrixSize), y = Runtime)) +
@@ -337,7 +338,7 @@ plot(linreg_small_transform$residuals, ylim=c(-m, m))
 abline(h=0, col="red")
 ```
 
-Addition & Size
+ANOVA tests fixing matrix operation and matrix size
 ```{r}
 operation_arr <- unique(data$MatrixOperation)
 size_arr <- unique(data$MatrixSize)
@@ -412,8 +413,7 @@ linreg_small <- lm(Runtime ~ Processor, data = df_small)
 summary(linreg_small)
 ```
 
-
-Big
+Big model
 ```{r}
 linreg_big <- lm(Runtime ~ MatrixOperation + Processor + MatrixSize, data = data)
 plot(linreg_big$residuals)
@@ -429,7 +429,6 @@ abline(h=0, col="red")
 ```
 
 
-
 # Lixian Chen Part I
 When the processor is the same, is there any operation and matrix size effect? We want to answer the following question: in each scenario, which processor should we use?
 
@@ -437,16 +436,16 @@ When the processor is the same, is there any operation and matrix size effect? W
 ```{r, prepare data, message=FALSE, warning=FALSE}
 # Read Data
 df <- fread("../data/Runtime.csv", header=TRUE)
-attach(df)
+#attach(df)
 
-MatrixOperation<-factor(MatrixOperation)
-Processor<-factor(Processor)
+MatrixOperation<-factor(df$MatrixOperation)
+Processor<-factor(df$Processor)
 
 
 
-CPUdata <- df %>% filter(Processor=="CPU")
-GPUdata <- df %>% filter(Processor=="GPU")
-TPUdata <- df %>% filter(Processor=="TPU")
+CPUdata <- df %>% dplyr::filter(Processor=="CPU")
+GPUdata <- df %>% dplyr::filter(Processor=="GPU")
+TPUdata <- df %>% dplyr::filter(Processor=="TPU")
 
 
 
@@ -501,6 +500,7 @@ modB<-lm(log10(Runtime)~MatrixOperation, data = size320data)
 anova(modA, modF)
 anova(modB, modF)
 ```
+
 ```{r}
 ################# 640
 fit2_640<-lm(Runtime~Processor+MatrixOperation, data = size640data)
@@ -896,7 +896,7 @@ while (!is.null(dev.list()))  dev.off()
 knitr::include_graphics("../figs/res_lm_gpu_inv.jpeg")
 ```
 
-At the level of matrix size=1260, avoid using CPU for inversion and multiplication because its run-times are much bigger.
+At the level of matrix size=1280, avoid using CPU for inversion and multiplication because its run-times are much bigger.
 
 ```{r, message=FALSE, warning=FALSE, echo=FALSE}
 # Addition & CPU
